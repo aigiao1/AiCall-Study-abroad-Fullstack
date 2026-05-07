@@ -1,0 +1,14 @@
+# Visual Studio / 编辑器缓存
+.vs/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+.claude/
+
+# 后端编译产物 (很重要，不要把编译好的代码交上去)
+backend/bin/
+backend/obj/
+
+# 前端依赖 (超级大，千万别交)
+frontend/node_modules/

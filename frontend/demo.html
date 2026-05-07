@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>语音识别演示 - H5智能客服</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 40px;
+      font-size: 14px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    #voice-input-container {
+      margin-bottom: 30px;
+    }
+
+    .result-section {
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+
+    .result-title {
+      font-size: 14px;
+      color: #999;
+      margin-bottom: 10px;
+    }
+
+    .result-text {
+      min-height: 80px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #333;
+      word-break: break-all;
+    }
+
+    .result-text:empty::before {
+      content: '识别结果将显示在这里...';
+      color: #bbb;
+    }
+
+    .config-section {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .config-title {
+      font-size: 14px;
+      color: #999;
+      margin-bottom: 15px;
+    }
+
+    .config-item {
+      margin-bottom: 15px;
+    }
+
+    .config-item label {
+      display: block;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .config-item input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .config-item input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .tip {
+      margin-top: 20px;
+      padding: 12px;
+      background: #fff3cd;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #856404;
+    }
+  </style>
+</head>
+<body>
+  <h1>语音识别演示</h1>
+  <p class="subtitle">基于阿里云 ASR + Cloudflare Worker</p>
+
+  <div class="container">
+    <!-- 语音输入组件容器 -->
+    <div id="voice-input-container"></div>
+
+    <!-- 识别结果 -->
+    <div class="result-section">
+      <div class="result-title">识别结果</div>
+      <div class="result-text" id="result-text"></div>
+    </div>
+
+    <!-- 配置区 -->
+    <div class="config-section">
+      <div class="config-title">Worker 配置</div>
+      <div class="config-item">
+        <label for="worker-url">Worker URL</label>
+        <input type="text" id="worker-url" value="https://asr-proxy.pb8xj6rk8v.workers.dev" placeholder="https://asr-proxy.your-subdomain.workers.dev">
+      </div>
+    </div>
+
+    <div class="tip">
+      提示：请先部署 Cloudflare Worker 并配置正确的 URL，然后点击麦克风按钮开始录音。
+    </div>
+  </div>
+
+  <!-- 引入 Recorder 库 -->
+  <script src="https://cdn.jsdelivr.net/gh/xiangyuecn/Recorder@latest/recorder.wav.min.js"></script>
+
+  <!-- 内联组件代码（生产环境建议使用模块化） -->
+  <script>
+    // ==================== VoiceRecognizerWithVAD ====================
+    class VoiceRecognizerWithVAD {
+      constructor(options = {}) {
+        this.recorder = null;
+        this.isRecording = false;
+
+        this.vadConfig = {
+          silenceThreshold: 15,
+          silenceDuration: 1500,
+          minRecordDuration: 500,
+          maxRecordDuration: 60000,
+          ...options.vad
+        };
+
+        this.recorderConfig = {
+          type: 'wav',
+          sampleRate: 16000,
+          bitRate: 16,
+          ...options.recorder
+        };
+
+        this.lastVoiceTime = 0;
+        this.recordStartTime = 0;
+        this.onAutoStop = null;
+        this.onProcess = options.onProcess || null;
+      }
+
+      async init() {
+        this.recorder = new Recorder({
+          type: this.recorderConfig.type,
+          sampleRate: this.recorderConfig.sampleRate,
+          bitRate: this.recorderConfig.bitRate,
+          onProcess: (buffers, powerLevel, duration) => {
+            this.handleVAD(powerLevel, duration);
+            if (this.onProcess) {
+              this.onProcess({ buffers, powerLevel, duration });
+            }
+          }
+        });
+
+        return new Promise((resolve, reject) => {
+          this.recorder.open(
+            () => resolve(),
+            (msg, isNotAllow) => {
+              const error = new Error(isNotAllow ? '用户拒绝录音权限' : msg);
+              error.isPermissionDenied = isNotAllow;
+              reject(error);
+            }
+          );
+        });
+      }
+
+      handleVAD(powerLevel, duration) {
+        if (!this.isRecording) return;
+
+        const now = Date.now();
+
+        // 调试日志：每秒输出一次音量信息
+        if (now % 1000 < 50) {
+          console.log(`[VAD] powerLevel: ${powerLevel}, duration: ${duration}ms`);
+        }
+
+        if (powerLevel > this.vadConfig.silenceThreshold) {
+          this.lastVoiceTime = now;
+        }
+
+        const silenceTime = now - this.lastVoiceTime;
+        const recordDuration = now - this.recordStartTime;
+
+        if (
+          recordDuration > this.vadConfig.minRecordDuration &&
+          silenceTime > this.vadConfig.silenceDuration
+        ) {
+          console.log(`[VAD] 静音 ${silenceTime}ms，录音时长 ${recordDuration}ms，自动停止录音`);
+          this.stopWithCallback('silence');
+          return;
+        }
+
+        if (recordDuration >= this.vadConfig.maxRecordDuration) {
+          console.log(`[VAD] 达到最大录音时长 ${recordDuration}ms，自动停止`);
+          this.stopWithCallback('maxDuration');
+        }
+      }
+
+      start(onAutoStop) {
+        if (!this.recorder) {
+          throw new Error('录音器未初始化');
+        }
+
+        this.onAutoStop = onAutoStop;
+        this.recordStartTime = Date.now();
+        this.lastVoiceTime = Date.now();
+
+        // 确保在 start 回调中设置状态
+        this.recorder.start();
+        this.isRecording = true;
+        
+        console.log('[VAD] 录音开始，最小录音时长:', this.vadConfig.minRecordDuration, 'ms');
+      }
+
+      stopWithCallback(reason) {
+        if (!this.isRecording) return;
+
+        this.stop().then((result) => {
+          if (this.onAutoStop) {
+            this.onAutoStop({ ...result, reason });
+          }
+        }).catch((error) => {
+          console.error('[VAD] 停止录音失败:', error);
+        });
+      }
+
+      stop() {
+        return new Promise((resolve, reject) => {
+          if (!this.recorder) {
+            reject(new Error('录音器未初始化'));
+            return;
+          }
+
+          this.isRecording = false;
+          
+          console.log('[VAD] 正在停止录音...');
+          
+          this.recorder.stop(
+            (blob, duration) => {
+              console.log(`[VAD] 录音停止成功，blob大小: ${blob.size} bytes, 时长: ${duration}ms`);
+              resolve({ blob, duration });
+            },
+            (msg) => {
+              console.error('[VAD] 录音停止失败:', msg);
+              reject(new Error(msg));
+            }
+          );
+        });
+      }
+
+      close() {
+        if (this.recorder) {
+          this.recorder.close();
+          this.recorder = null;
+          this.isRecording = false;
+        }
+      }
+
+      static isSupported() {
+        return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+      }
+    }
+
+    // ==================== ASR API ====================
+    async function recognizeSpeech(audioBlob, workerUrl) {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.wav');
+      formData.append('format', 'wav');
+      formData.append('sampleRate', '16000');
+
+      const response = await fetch(`${workerUrl}/api/asr/recognize`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP 请求失败: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.status === 20000000) {
+        return result.result || '';
+      }
+
+      throw new Error(result.message || '识别失败');
+    }
+
+    // ==================== TTS API ====================
+    async function playTTS(text, workerUrl, statusCallback) {
+      if (!text || !text.trim()) return;
+
+      // 文本长度限制
+      if (text.length > 300) {
+        console.warn('[TTS] 文本超过 300 字符，将截断');
+        text = text.substring(0, 300);
+      }
+
+      // 构建 TTS 请求 URL
+      const ttsUrl = new URL(`${workerUrl}/api/tts/synthesize`);
+      ttsUrl.searchParams.set('text', text);
+      ttsUrl.searchParams.set('format', 'mp3');
+      ttsUrl.searchParams.set('sample_rate', '16000');
+
+      try {
+        if (statusCallback) statusCallback('正在合成语音...');
+        
+        const response = await fetch(ttsUrl.toString());
+        const contentType = response.headers.get('Content-Type');
+
+        if (contentType === 'audio/mpeg') {
+          // 创建 Audio 对象播放
+          const audioBlob = await response.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+          
+          if (statusCallback) statusCallback('正在播放...');
+          
+          audio.play();
+
+          // 播放结束后释放资源
+          audio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+            if (statusCallback) statusCallback('');
+          };
+
+          audio.onerror = () => {
+            URL.revokeObjectURL(audioUrl);
+            if (statusCallback) statusCallback('播放失败');
+          };
+        } else {
+          const error = await response.json();
+          console.error('[TTS] 合成失败:', error.message);
+          if (statusCallback) statusCallback(`TTS 失败: ${error.message}`);
+        }
+      } catch (error) {
+        console.error('[TTS] 请求失败:', error);
+        if (statusCallback) statusCallback(`TTS 错误: ${error.message}`);
+      }
+    }
+
+    // ==================== 初始化 ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById('voice-input-container');
+      const resultText = document.getElementById('result-text');
+      const workerUrlInput = document.getElementById('worker-url');
+
+      let recognizer = null;
+      let isRecording = false;
+
+      // 渲染简单按钮
+      container.innerHTML = `
+        <div class="voice-input">
+          <button class="voice-input__btn" type="button" id="voice-btn">
+            <span class="voice-input__icon">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+              </svg>
+            </span>
+            <span class="voice-input__text" id="btn-text">点击说话</span>
+          </button>
+          <div class="voice-input__status" id="status-text"></div>
+        </div>
+      `;
+
+      // 添加样式
+      const style = document.createElement('style');
+      style.textContent = `
+        .voice-input {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+          padding: 20px;
+        }
+        .voice-input__btn {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 120px;
+          height: 120px;
+          border: none;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .voice-input__btn:hover {
+          transform: scale(1.05);
+        }
+        .voice-input__btn.recording {
+          background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+          animation: pulse 1.5s infinite;
+        }
+        .voice-input__btn.processing {
+          background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+          pointer-events: none;
+        }
+        .voice-input__icon {
+          width: 48px;
+          height: 48px;
+          margin-bottom: 4px;
+        }
+        .voice-input__icon svg {
+          width: 100%;
+          height: 100%;
+        }
+        .voice-input__text {
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .voice-input__status {
+          font-size: 12px;
+          color: #666;
+          min-height: 18px;
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+      `;
+      document.head.appendChild(style);
+
+      const btn = document.getElementById('voice-btn');
+      const btnText = document.getElementById('btn-text');
+      const statusText = document.getElementById('status-text');
+
+      btn.addEventListener('click', async () => {
+        const workerUrl = workerUrlInput.value.trim();
+        
+        if (!workerUrl) {
+          alert('请先配置 Worker URL');
+          workerUrlInput.focus();
+          return;
+        }
+
+        if (!isRecording) {
+          // 开始录音
+          try {
+            btn.classList.remove('recording', 'processing');
+            btnText.textContent = '初始化中...';
+
+            recognizer = new VoiceRecognizerWithVAD({
+              vad: { silenceThreshold: 100, silenceDuration: 5000, minRecordDuration: 2000 }
+            });
+
+            await recognizer.init();
+
+            recognizer.start(async (result) => {
+              // VAD 自动停止回调
+              await processResult(result);
+            });
+
+            isRecording = true;
+            btn.classList.add('recording');
+            btnText.textContent = '正在录音...';
+            statusText.textContent = '点击停止或等待自动结束';
+
+          } catch (error) {
+            console.error('录音启动失败:', error);
+            btnText.textContent = '点击说话';
+            statusText.textContent = error.message;
+            btn.classList.remove('recording');
+          }
+        } else {
+          // 手动停止录音
+          try {
+            const result = await recognizer.stop();
+            isRecording = false;
+            await processResult(result);
+          } catch (error) {
+            console.error('停止录音失败:', error);
+            statusText.textContent = error.message;
+            resetUI();
+          }
+        }
+      });
+
+      async function processResult({ blob, duration }) {
+        btn.classList.remove('recording');
+        btn.classList.add('processing');
+        btnText.textContent = '识别中...';
+        statusText.textContent = '';
+
+        // 检查 blob 是否有效
+        if (!blob || blob.size === 0) {
+          console.error('[Process] 录音 blob 无效:', blob);
+          resultText.textContent = '录音失败：未能获取音频数据';
+          resetUI();
+          return;
+        }
+        
+        console.log(`[Process] 开始识别，blob大小: ${blob.size} bytes, 时长: ${duration}ms`);
+
+        try {
+          const workerUrl = workerUrlInput.value.trim();
+          const text = await recognizeSpeech(blob, workerUrl);
+          
+          resultText.textContent = text || '（识别结果为空）';
+          console.log('识别结果:', text);
+
+          // 识别成功后自动播放 TTS
+          if (text) {
+            playTTS(text, workerUrl, (status) => {
+              statusText.textContent = status;
+            });
+          }
+
+        } catch (error) {
+          console.error('识别失败:', error);
+          resultText.textContent = `识别失败: ${error.message}`;
+        } finally {
+          recognizer?.close();
+          recognizer = null;
+          isRecording = false;
+          resetUI();
+        }
+      }
+
+      function resetUI() {
+        btn.classList.remove('recording', 'processing');
+        btnText.textContent = '点击说话';
+        statusText.textContent = '';
+      }
+    });
+  </script>
+</body>
+</html>

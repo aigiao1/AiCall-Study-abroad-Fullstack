@@ -1,0 +1,17 @@
+{
+  "name": "asr-proxy",
+  "version": "1.0.0",
+  "description": "阿里云 ASR 语音识别代理服务 - Cloudflare Worker",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "keywords": ["cloudflare", "worker", "asr", "aliyun"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

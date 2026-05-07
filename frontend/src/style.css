@@ -1,0 +1,88 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --font-display: "Cormorant Garamond", serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --color-app-bg: #f7fbff;
+}
+
+:root {
+  --app-bg: #f7fbff;
+}
+
+html,
+body,
+#app {
+  min-height: 100dvh;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--app-bg);
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+.Vue-Toastification__container.top-center {
+  top: 1rem;
+}
+
+.Vue-Toastification__toast {
+  min-height: 0;
+  padding: 0.9rem 1rem;
+}
+
+/* --- 优化后的过渡逻辑 --- */
+:root {
+  --neo-shadow-dark: rgba(148, 163, 184, 0.45);
+  --neo-shadow-light: rgba(255, 255, 255, 1);
+  --app-bg: #f7fbff;
+
+  /* 定义一个丝滑的阻尼曲线 */
+  --neo-transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.neo-raised {
+  background: var(--app-bg);
+  box-shadow: 8px 8px 18px var(--neo-shadow-dark), -8px -8px 18px var(--neo-shadow-light);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  /* 应用过渡 */
+  transition: var(--neo-transition);
+}
+
+.neo-inset {
+  background: var(--app-bg);
+  box-shadow: inset 6px 6px 12px var(--neo-shadow-dark), inset -6px -6px 12px var(--neo-shadow-light);
+  border: 1px solid rgba(203, 213, 225, 0.2);
+  /* 凹陷状态也要有同样的过渡 */
+  transition: var(--neo-transition);
+}
+
+.neo-icon-box {
+  background: var(--app-bg);
+  box-shadow: 4px 4px 10px var(--neo-shadow-dark), -4px -4px 10px var(--neo-shadow-light);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: var(--neo-transition);
+}

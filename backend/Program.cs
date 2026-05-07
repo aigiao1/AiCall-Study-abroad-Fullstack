@@ -11,21 +11,24 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. ×¢²á»ù´¡¿ØÖÆÆ÷Óë JSON ÐòÁÐ»¯ÅäÖÃ
+// Environment variables override appsettings.json values (e.g. LLM__ApiKey, JWT__SigningKey)
+builder.Configuration.AddEnvironmentVariables();
+
+// 1. ×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ JSON ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 });
 builder.Services.AddEndpointsApiExplorer();
 
-// 2. ×¢²á Swagger (´ø JWT ÑéÖ¤¹¦ÄÜ)
+// 2. ×¢ï¿½ï¿½ Swagger (ï¿½ï¿½ JWT ï¿½ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½)
 builder.Services.AddSwaggerGen(option =>
 {
     option.SwaggerDoc("v1", new OpenApiInfo { Title = "AICall API", Version = "v1" });
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "ÇëÊäÈë£ºBearer {ÄãµÄToken}",
+        Description = "ï¿½ï¿½ï¿½ï¿½ï¿½ë£ºBearer {ï¿½ï¿½ï¿½Token}",
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey,
         BearerFormat = "JWT",
@@ -43,19 +46,19 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
-// 3. ÅäÖÃ¿çÓò²ßÂÔ (CORS) £¬ÔÊÐí Vue Ç°¶Ë·ÃÎÊ
+// 3. ï¿½ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (CORS) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Vue Ç°ï¿½Ë·ï¿½ï¿½ï¿½
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowVueApp", policy =>
     {
-        policy.WithOrigins("https://localhost:5175", "http://localhost:3000") // Ìæ»»ÎªÄãµÄ Vue Ç°¶ËµØÖ·
+        policy.WithOrigins("https://localhost:5175", "http://localhost:3000") // ï¿½æ»»Îªï¿½ï¿½ï¿½ Vue Ç°ï¿½Ëµï¿½Ö·
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
 
-// 4. Êý¾Ý¿âÉÏÏÂÎÄÅäÖÃ
+// 4. ï¿½ï¿½ï¿½Ý¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
 {
@@ -63,7 +66,7 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
 });
 
 
-// 5. Éí·ÝÈÏÖ¤Óë JWT ÅäÖÃ 
+// 5. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤ï¿½ï¿½ JWT ï¿½ï¿½ï¿½ï¿½ 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = false;
@@ -95,17 +98,17 @@ builder.Services.AddAuthentication(options =>
 });
 
 
-// 6. ÒÀÀµ×¢ÈëÈÝÆ÷ (ÒµÎñ²ã¼¶£¬ºóÐøÌî³ä)
+// 6. ï¿½ï¿½ï¿½ï¿½×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (Òµï¿½ï¿½ã¼¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 builder.Services.AddScoped<ICallSessionRepository, CallSessionRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<ILLMService, LLMService>();
 builder.Services.AddScoped<ISpeechService, SpeechService>();
-builder.Services.AddHttpClient(Microsoft.Extensions.Options.Options.DefaultName)//×¢²á HttpClient ¹¤³§£¬ÕâÊÇÊ¹ÓÃ IHttpClientFactory µÄ±ØÐë²½Öè
+builder.Services.AddHttpClient(Microsoft.Extensions.Options.Options.DefaultName)//×¢ï¿½ï¿½ HttpClient ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½ IHttpClientFactory ï¿½Ä±ï¿½ï¿½ë²½ï¿½ï¿½
     .ConfigurePrimaryHttpMessageHandler(() =>
     {
         return new HttpClientHandler
         {
-            // Ç¿ÐÐ°ÑËùÓÐ HttpClient µÄµ×²ãÇëÇó¶¼Ö¸ÏòÄãµÄ´úÀí¶Ë¿Ú
+            // Ç¿ï¿½Ð°ï¿½ï¿½ï¿½ï¿½ï¿½ HttpClient ï¿½Äµ×²ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½ï¿½Ë¿ï¿½
             Proxy = new System.Net.WebProxy("http://127.0.0.1:7897")
             {
                 BypassProxyOnLocal = false
@@ -113,7 +116,31 @@ builder.Services.AddHttpClient(Microsoft.Extensions.Options.Options.DefaultName)
             UseProxy = true
         };
     });
+// Validate that required secrets are set (from env vars or appsettings.json)
+var missingSecrets = new List<string>();
+if (string.IsNullOrWhiteSpace(builder.Configuration["JWT:SigningKey"]) || builder.Configuration["JWT:SigningKey"]!.Length < 32)
+    missingSecrets.Add("JWT:SigningKey (min 32 chars)");
+if (string.IsNullOrWhiteSpace(builder.Configuration["LLM:ApiKey"]))
+    missingSecrets.Add("LLM:ApiKey");
+if (string.IsNullOrWhiteSpace(builder.Configuration["LLM:BaseUrl"]))
+    missingSecrets.Add("LLM:BaseUrl");
+if (string.IsNullOrWhiteSpace(builder.Configuration["ASR:ApiKey"]))
+    missingSecrets.Add("ASR:ApiKey");
+if (string.IsNullOrWhiteSpace(builder.Configuration["TTS:ApiKey"]))
+    missingSecrets.Add("TTS:ApiKey");
+
+if (missingSecrets.Count > 0)
+{
+    var msg = $"FATAL: Missing required configuration keys: {string.Join(", ", missingSecrets)}. " +
+              "Set them in appsettings.json or via environment variables (e.g. LLM__ApiKey).";
+    Console.Error.WriteLine(msg);
+    throw new InvalidOperationException(msg);
+}
+
 var app = builder.Build();
+
+// Global exception handler â€” must be the first middleware in the pipeline
+app.UseMiddleware<AICall.API.Middleware.GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -122,7 +149,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowVueApp"); // ÆôÓÃ¿çÓò
+app.UseCors("AllowVueApp"); // ï¿½ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
