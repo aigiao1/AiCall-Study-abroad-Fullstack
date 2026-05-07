@@ -1,0 +1,145 @@
+﻿using AICall.API.Dtos.Conversation;
+using AICall.API.Extensions;
+using AICall.API.Interfaces;
+using AICall.API.Mappers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace AICall.API.Controllers
+{
+    [Route("aicall/api/[controller]")]
+    [ApiController]
+
+    public class ConversationController : ControllerBase
+    {
+        private readonly ICallSessionRepository _sessionRepo;
+        private readonly ILLMService _llmService;
+        public ConversationController(ICallSessionRepository sessionRepo, ILLMService llmService)
+        {
+            _sessionRepo = sessionRepo;
+            _llmService = llmService;
+
+        }
+        // 1. 聊天接口
+        [HttpPost("chat")]
+        [Authorize]
+        public async Task<IActionResult> Chat([FromBody] ChatRequestDto request)
+        {
+            try
+            {
+                // 【调用ai聊天回复】
+                string aiAnswer = await _llmService.GetChatResponseAsync(request.Conversation, request.Category);
+                var response = new
+                {
+                    data = new
+                    {
+                        response_msg = new
+                        {
+                            answer = aiAnswer,
+                            is_end = false // 目前简单处理，默认不挂断
+                        }
+                    }
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"AI 调用失败: {ex.Message}");
+                return StatusCode(500, "大模型服务异常，请查看控制台日志");
+            }
+        }
+
+        // 2.新增的流式聊天接口
+        [HttpPost("chat-stream")]
+        [Authorize]
+        public async Task ChatStream([FromBody] ChatRequestDto request)
+        {
+
+            Response.Headers.Add("Content-Type", "text/event-stream");
+            Response.Headers.Add("Cache-Control", "no-cache");
+            Response.Headers.Add("Connection", "keep-alive");
+
+            try
+            {
+
+                var stream = _llmService.GetChatStreamAsync(request.Conversation, request.Category);
+
+                // 只要大模型吐出一个字，我们就立刻顺着网线扔给前端
+                await foreach (var chunk in stream)
+                {
+                    // Server-Sent Events (SSE) 的国际标准格式：必须以 "data: " 开头，以两个换行符结尾
+                    var formattedData = $"data: {chunk}\n\n";
+
+                    await Response.WriteAsync(formattedData);
+                    await Response.Body.FlushAsync(); // Flush 的意思就是“立刻冲水”，绝不把字留在后端的肚子里
+                }
+
+                // 大模型说完了，发一个结束信号告诉前端
+                await Response.WriteAsync("data: [DONE]\n\n");
+                await Response.Body.FlushAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"AI 流式调用失败: {ex.Message}");
+                // 如果中途报错了，把错误信息也通过流推给前端
+                await Response.WriteAsync($"data: [ERROR]大模型服务异常，请查看控制台日志\n\n");
+                await Response.Body.FlushAsync();
+            }
+        }
+
+
+
+        // 3. 生成报告接口
+
+        [HttpPost("report")]
+        [Authorize]
+        public async Task<IActionResult> GenerateReport([FromBody] ChatRequestDto request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            string UserId = User.GetUserId();
+            try
+            {
+
+                string rawSummary = await _llmService.GenerateSummaryAsync(request.Conversation, request.Category);
+
+                string cleanJson = rawSummary.Replace("```json", "").Replace("```", "").Trim();
+
+                var summaryObj = System.Text.Json.JsonSerializer.Deserialize<LLMSummaryResultDto>(cleanJson);
+
+                if (summaryObj == null) throw new Exception("大模型返回的数据解析失败");
+
+                // 4. 存数据库！(直接用你写好的 Mapper，把干净的 JSON 文本存进去)
+                var sessionModel = request.ToCallSessionFromDto(cleanJson, UserId);
+                await _sessionRepo.CreateSessionAsync(sessionModel);
+
+                // 5. 拼装前端需要的最终格式返回
+                var finalReport = new
+                {
+                    data = new
+                    {
+                        report_msg = new
+                        {
+                            summary = new
+                            {
+                                Topic = request.Category,           // 对应前端的 "对话主题"
+                                Background = summaryObj.Background, // 对应前端的 "学术背景"
+                                Intention = summaryObj.Intention,   // 对应前端的 "留学意向"
+                                Needs = summaryObj.Needs,           // 对应前端的 "核心诉求"
+                                FollowUp = summaryObj.FollowUp      // 对应前端的 "下一步计划"
+                            }
+                        }
+                    }
+                };
+
+                return Ok(finalReport);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"报告生成失败: {ex.Message}");
+                return StatusCode(500, "生成报告失败，请重试");
+            }
+        }
+    }
+}
