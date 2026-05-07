@@ -1,0 +1,9 @@
+# Backend .gitignore — protect local secrets and build artifacts
+
+# Dev secrets — these files contain YOUR real API keys
+start-dev.ps1
+appsettings.Development.json
+
+# Build output
+bin/
+obj/

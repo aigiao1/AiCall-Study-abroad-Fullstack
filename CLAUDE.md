@@ -3,6 +3,7 @@
 - **Language**: You MUST explain your thoughts, architectures, and summaries in **Professional Simplified Chinese (简体中文)**. All code, variable names, CLI commands, and commit messages MUST be in **English**.
 - **Autonomy & Self-Healing**: If a `dotnet build` or `pnpm` command fails, DO NOT ask for permission. Automatically read the traceback, search for solutions using `brave` MCP, fix the C#/Vue code, and retry until it compiles/runs.
 - **Deep Reasoning**: For complex tasks (e.g., SSE streaming, VAD audio processing, EF Core circular references), wrap your planning in `<thought>` tags to simulate DeepSeek-R1 logical deduction.
+- **Workflow Automation**: When completing a feature, autonomously run tests. If passing, automatically use Git CLI to stage and commit (following Conventional Commits).
 
 # 0x01: Project Overview
 AI-powered customer service fullstack application for study-abroad admissions consulting. Users make voice calls with an AI agent (ASR -> LLM -> TTS).
@@ -32,3 +33,16 @@ AI-powered customer service fullstack application for study-abroad admissions co
 - **Network Proxy**: Backend uses HTTP proxy `127.0.0.1:7897` via `IHttpClientFactory` to access LLM/ASR/TTS from China. NEVER remove this unless explicitly told.
 - **Database**: Local SQL Server (`Trusted_Connection=True`), DB: `AICallDB`.
 - **Commits**: Follow Conventional Commits format (`feat:`, `fix:`, `refactor:`).
+- **Topology Awareness**: Always review `REPO_MAP.md` in the root directory to understand the project structure before modifying files. If you create or delete core modules, update `REPO_MAP.md` accordingly.
+
+# 0x05: Testing & TDD (The Automation Loop)
+- **TDD Mindset**: When writing new features, prioritize writing tests first, then implement the code to make tests pass.
+- **Backend Tests**: Run `dotnet test`. If tests fail, read the logs, self-heal the C# code, and loop until green.
+- **Frontend E2E**: Run `npx playwright test`. If UI or flow fails, analyze the Playwright trace, fix the Vue component, and retry until green.
+
+# 0x06: 🚨 RED LINES (Destructive Operations)
+- **NEVER** execute the following without explicitly asking for the user's permission first:
+  1. `Drop-Database` or deleting/reverting EF Core migrations (`dotnet ef database drop`).
+  2. Recursive force deletions (e.g., `rm -rf`, `Remove-Item -Recurse -Force`) on directories other than `bin/`, `obj/`, `dist/`.
+  3. Git operations that rewrite remote history (`git push --force`).
+  4. Uninstalling core dependencies from `package.json` or `.csproj`.

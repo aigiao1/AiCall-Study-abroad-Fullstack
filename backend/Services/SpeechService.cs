@@ -109,8 +109,7 @@ namespace AICall.API.Services
             {
                 model = model,
                 input = text,
-                voice = voice,
-                response_format = "mp3"
+                voice = voice
             };
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), System.Text.Encoding.UTF8, "application/json");
