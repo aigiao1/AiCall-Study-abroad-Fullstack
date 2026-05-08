@@ -298,6 +298,8 @@ const stateLabel = computed(() => {
   return labelMap[state.value] || "Live";
 });
 
+const sceneType = computed(() => Number(route.query.scene) || 1);
+
 const microphoneHaloStyle = computed(() => {
   const scale = 0.92 + microphoneVolume.value * 0.98;
   const size = 82;
@@ -466,6 +468,7 @@ const sendToServer = async (flowToken = stateLock.value) => {
   const requestBody = {
     category,
     sub_Category: subCategory,
+    sceneType: sceneType.value,
     conversation: messages.value
       .filter((m) => typeof m.content === "string" && m.content.trim().length > 0)
       .map((m) => ({ role: m.role, content: m.content })),
@@ -543,7 +546,7 @@ const endCall = async () => {
   abortStream();
   await closeRecognizer();
   // 生成通话报告
-  generateConversationReport(messages.value);
+  generateConversationReport(messages.value, sceneType.value);
 };
 
 const restart = () => {

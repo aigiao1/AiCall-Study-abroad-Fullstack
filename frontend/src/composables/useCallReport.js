@@ -18,7 +18,7 @@ export function useCallReport() {
   };
 
   // 拿着聊天记录去后台生成总结报告
-  const generateConversationReport = async (messagesArray) => {
+  const generateConversationReport = async (messagesArray, sceneType) => {
     isGeneratingReport.value = true;
     try {
       const category = route.query.category || "";
@@ -26,7 +26,8 @@ export function useCallReport() {
       const result = await LLMServer.generateReport(
         messagesArray,
         category,
-        subCategory
+        subCategory,
+        sceneType
       );
       if (
         result.data &&
