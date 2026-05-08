@@ -7,11 +7,12 @@ import { apiLlmChat, apiGenerateReport } from '../api/index.js';
 export const LLMServer = {
   conversationRounds: 0,
 
-  async chat(messages, category, subCategory) {
+  async chat(messages, category, subCategory, sceneType = 1) {
     const result = await apiLlmChat({
       conversation: messages.map(x => ({ role: x.role, content: x.content })),
       category,
       sub_category: subCategory,
+      sceneType,
     });
 
     this.conversationRounds++
@@ -28,13 +29,14 @@ export const LLMServer = {
     this.conversationRounds = 0
   },
 
-  async generateReport(messages, category, subCategory) {
-   
+  async generateReport(messages, category, subCategory, sceneType = 1) {
+
     try{
       const result = await apiGenerateReport({
       conversation: messages.map(x => ({ role: x.role, content: x.content })),
       category,
       sub_category: subCategory,
+      sceneType,
     });
     console.log("generate report with response", result);
     return result;
