@@ -5,6 +5,9 @@ import ChatRoom from "../views/chatroom.vue";
 import HistoryList from "../views/HistoryList.vue";
 import HistoryDetail from "../views/HistoryDetail.vue";
 import DashboardView from "../views/DashboardView.vue";
+import StudyAbroadView from "../views/StudyAbroadView.vue";
+import InterviewView from "../views/InterviewView.vue";
+import EnglishCoachView from "../views/EnglishCoachView.vue";
 import { notify } from "@/utils/toast";
 
 const routes = [
@@ -17,6 +20,24 @@ const routes = [
     path: "/home",
     name: "Home",
     component: HomeView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/study-abroad",
+    name: "StudyAbroad",
+    component: StudyAbroadView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/interview",
+    name: "Interview",
+    component: InterviewView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/english-coach",
+    name: "EnglishCoach",
+    component: EnglishCoachView,
     meta: { requiresAuth: true },
   },
   {
