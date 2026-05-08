@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import {
   ArrowRight,
+  BarChart3,
   GraduationCap,
   History,
   Languages,
@@ -202,6 +203,9 @@ const startCall = async () => {
 const goHistory = () => {
   router.push({ name: "HistoryList" });
 };
+const goDashboard = () => {
+  router.push({ name: "Dashboard" });
+};
 </script>
 
 <template>
@@ -237,10 +241,16 @@ const goHistory = () => {
       <h2 class="mt-0.5 text-[1.4rem] font-bold tracking-tight text-slate-900">Choose a topic</h2>
     </div>
 
-    <button type="button" @click="goHistory" class="neo-raised flex h-9 items-center gap-2 rounded-full px-4 text-xs font-semibold text-slate-600 transition-all active:scale-95">
-      <History :size="14" stroke-width="2" class="text-slate-400" />
-      <span>History</span>
-    </button>
+    <div class="flex items-center gap-2">
+<button type="button" @click="goDashboard" class="neo-raised flex h-9 items-center gap-2 rounded-full px-3.5 text-xs font-semibold text-sky-600 transition-all active:scale-95">
+        <BarChart3 :size="14" stroke-width="2" class="text-sky-500" />
+        <span>Dashboard</span>
+      </button>
+      <button type="button" @click="goHistory" class="neo-raised flex h-9 items-center gap-2 rounded-full px-3.5 text-xs font-semibold text-slate-600 transition-all active:scale-95">
+        <History :size="14" stroke-width="2" class="text-slate-400" />
+        <span>History</span>
+      </button>
+    </div>
   </div>
 
   <nav class="grid grid-cols-2 gap-2.5">

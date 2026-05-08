@@ -4,6 +4,7 @@ import LoginView from "../views/LoginView.vue";
 import ChatRoom from "../views/chatroom.vue";
 import HistoryList from "../views/HistoryList.vue";
 import HistoryDetail from "../views/HistoryDetail.vue";
+import DashboardView from "../views/DashboardView.vue";
 import { notify } from "@/utils/toast";
 
 const routes = [
@@ -34,6 +35,12 @@ const routes = [
     path: "/history/:id",
     name: "HistoryDetail",
     component: HistoryDetail,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/dashboard",
+    name: "Dashboard",
+    component: DashboardView,
     meta: { requiresAuth: true },
   },
 ];

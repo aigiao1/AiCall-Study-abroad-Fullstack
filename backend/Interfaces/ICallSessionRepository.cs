@@ -18,5 +18,7 @@ namespace AICall.API.Interfaces
 
         //删除某个会话
         Task<bool> DeleteSessionAsync(int id, string userId);
+
+        Task<DashboardStatsDto> GetDashboardStatsAsync(string userId);
     }
 }

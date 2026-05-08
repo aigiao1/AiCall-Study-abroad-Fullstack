@@ -79,3 +79,10 @@ export const apiDeleteCallSession = (id) => {
         method: "delete"
     })
 }
+
+export const apiGetDashboardStats = () => {
+    return request({
+        url: "/dashboard/stats",
+        method: "get"
+    })
+}

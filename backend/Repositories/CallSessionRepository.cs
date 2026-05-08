@@ -4,6 +4,7 @@ using AICall.API.Dtos.Conversation;
 using AICall.API.Interfaces;
 using AICall.API.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace AICall.API.Repositories
 {
@@ -84,6 +85,68 @@ namespace AICall.API.Repositories
             _context.CallSessions.Remove(session);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<DashboardStatsDto> GetDashboardStatsAsync(string userId)
+        {
+            var userSessions = _context.CallSessions.Where(s => s.AppUserId == userId);
+
+            var now = DateTime.UtcNow;
+            var weekStart = now.Date.AddDays(-(int)now.DayOfWeek);
+
+            var totalCalls = await userSessions.CountAsync();
+            var weeklyCalls = await userSessions.CountAsync(s => s.StartTime >= weekStart);
+
+            var durations = await userSessions
+                .Where(s => s.EndTime != null)
+                .Select(s => (s.EndTime!.Value - s.StartTime!.Value).TotalSeconds)
+                .ToListAsync();
+            var totalDurationSeconds = durations.Sum();
+            var avgDurationSeconds = durations.Count > 0 ? Math.Round(durations.Average(), 1) : 0;
+
+            var categoryDist = await userSessions
+                .GroupBy(s => s.Category ?? "Uncategorized")
+                .Select(g => new CategoryStatDto { Category = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            var sevenDaysAgo = now.Date.AddDays(-6);
+            var rawTrend = await userSessions
+                .Where(s => s.StartTime >= sevenDaysAgo)
+                .GroupBy(s => s.StartTime!.Value.Date)
+                .Select(g => new { Date = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            var weeklyTrend = Enumerable.Range(0, 7)
+                .Select(offset => sevenDaysAgo.AddDays(offset))
+                .GroupJoin(rawTrend, d => d.Date, r => r.Date, (d, rs) => new DailyTrendDto
+                {
+                    Date = d.ToString("MM-dd"),
+                    Count = rs.FirstOrDefault()?.Count ?? 0
+                })
+                .ToList();
+
+            var recentSessions = await userSessions
+                .OrderByDescending(s => s.StartTime)
+                .Take(5)
+                .Select(s => new RecentSessionDto
+                {
+                    Id = s.Id,
+                    StartTime = s.StartTime,
+                    Category = s.Category,
+                    SubCategory = s.SubCategory
+                })
+                .ToListAsync();
+
+            return new DashboardStatsDto
+            {
+                TotalCalls = totalCalls,
+                WeeklyCalls = weeklyCalls,
+                TotalDurationSeconds = totalDurationSeconds,
+                AvgDurationSeconds = avgDurationSeconds,
+                CategoryDistribution = categoryDist,
+                WeeklyTrend = weeklyTrend,
+                RecentSessions = recentSessions
+            };
         }
     }
 }
