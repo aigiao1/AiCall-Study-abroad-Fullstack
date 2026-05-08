@@ -45,6 +45,9 @@ const stopVolumeLoop = (ttsVolume) => {
 
 const sampleTtsVolume = (ttsVolume) => {
   if (!analyserNode || !analyserDataArray) return;
+  if (analyserAudioContext?.state === "suspended") {
+    analyserAudioContext.resume();
+  }
 
   analyserNode.getByteTimeDomainData(analyserDataArray);
 
@@ -103,7 +106,7 @@ export function useTTSPlayer() {
     audio.onstalled = null;
   };
 
-  const SPLIT_THRESHOLD = 300; // Only split into sentences if text is long enough
+  const SPLIT_THRESHOLD = 500; // Only split very long responses
 
   // Sequential sentence-by-sentence TTS with prefetch (for long LLM responses)
   const playTTSSequential = async (
@@ -158,26 +161,33 @@ export function useTTSPlayer() {
       }
 
       let isFirst = true;
-      let prefetchBlob = null;
-      let prefetchIdx = -1;
+      let prefetchBlobs = []; // prefetch up to 2 ahead: [idx, blob]
+
+      // Prefetch first 2 segments before playing anything
+      for (let j = 0; j < Math.min(2, segments.length) && !seqAborted; j++) {
+        fetchTTSAudio(segments[j]).then((blob) => {
+          prefetchBlobs.push([j, blob]);
+        });
+      }
 
       for (let i = 0; i < segments.length; i++) {
         if (seqAborted || stateRef.value === "ENDED") break;
 
+        // Wait for prefetched blob or fetch now
         let audioBlob;
-        if (prefetchIdx === i) {
-          audioBlob = prefetchBlob;
-          prefetchBlob = null;
+        const cached = prefetchBlobs.find(([idx]) => idx === i);
+        if (cached) {
+          audioBlob = cached[1];
+          prefetchBlobs = prefetchBlobs.filter(([idx]) => idx !== i);
         } else {
           audioBlob = await fetchTTSAudio(segments[i]);
         }
 
-        // Prefetch next segment while current plays
-        if (i + 1 < segments.length && !seqAborted) {
-          const nextIdx = i + 1;
-          fetchTTSAudio(segments[nextIdx]).then((blob) => {
-            prefetchBlob = blob;
-            prefetchIdx = nextIdx;
+        // Prefetch segment i+2 while playing segment i
+        const ahead = i + 2;
+        if (ahead < segments.length && !seqAborted && !prefetchBlobs.some(([idx]) => idx === ahead)) {
+          fetchTTSAudio(segments[ahead]).then((blob) => {
+            prefetchBlobs.push([ahead, blob]);
           });
         }
 
