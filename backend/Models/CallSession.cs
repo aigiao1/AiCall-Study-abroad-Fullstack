@@ -10,6 +10,7 @@
         public string? Category { get; set; } = string.Empty;
         public string? SubCategory { get; set; } = string.Empty;
         public string? Summary { get; set; } = string.Empty;
+        public SceneType SceneType { get; set; } = SceneType.StudyAbroad;
         public List<CallMessage>? Messages { get; set; } = new List<CallMessage>();//One-To-Many爸爸知道儿子们是谁
     }
 }
