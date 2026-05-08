@@ -195,7 +195,8 @@ export function useTTSPlayer() {
               isFirst = false;
               stopVolumeLoop(ttsVolume);
               sampleTtsVolume(ttsVolume);
-              onFirstStart?.(globalAudioInst);
+              // Pass null — sequential audio can't sync typing to a single segment
+              onFirstStart?.(null);
             }
           };
           globalAudioInst.play().catch(() => resolve());

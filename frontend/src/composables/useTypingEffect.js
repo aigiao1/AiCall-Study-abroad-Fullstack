@@ -57,7 +57,7 @@ export function useTypingEffect() {
       }
       index += 1;
       onUpdateText(fullText.slice(0, index));
-    }, 35);
+    }, 60);
   };
 
   // 把店长需要的方法交出去
