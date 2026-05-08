@@ -108,8 +108,21 @@ export function useTTSPlayer() {
   ) => {
     if (!text?.trim()) return;
     seqAborted = false;
-    stopCurrentAudio();
-    isAudioTrulyFinished.value = false;
+
+    // Stop any currently playing audio WITHOUT setting seqAborted
+    const audio = globalAudioManager.getAudio();
+    if (audio) {
+      isAudioTrulyFinished.value = false;
+      stopVolumeLoop(ttsVolume);
+      audio.pause();
+      audio.onended = null;
+      audio.onerror = null;
+      audio.onplay = null;
+      audio.onplaying = null;
+      audio.onpause = null;
+      audio.onwaiting = null;
+      audio.onstalled = null;
+    }
 
     const sentences = splitSentences(text);
     if (sentences.length === 0) return;
