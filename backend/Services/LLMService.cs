@@ -109,11 +109,11 @@ The JSON must include the following fields. If any information is not mentioned 
 }}"
             };
 
-            string rawSummary = await SendToLLMAsync(messages, systemPrompt);
+            string rawSummary = await SendToLLMAsync(messages, systemPrompt, 0);
             return rawSummary;
         }
 
-        private async Task<string> SendToLLMAsync(List<MessageDto> messages, string systemPrompt)
+        private async Task<string> SendToLLMAsync(List<MessageDto> messages, string systemPrompt, double temperature = 0.7)
         {
             var apiKey = _config["LLM:ApiKey"];
             var baseUrl = _config["LLM:BaseUrl"];
@@ -137,7 +137,7 @@ The JSON must include the following fields. If any information is not mentioned 
             {
                 model = modelName,
                 messages = openAiMessages,
-                temperature = 0.7
+                temperature
             };
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
