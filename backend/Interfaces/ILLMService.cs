@@ -7,7 +7,7 @@ namespace AICall.API.Interfaces
     {
         Task<string> GetChatResponseAsync(List<MessageDto> messages, string category, SceneType sceneType = SceneType.StudyAbroad, string mode = "");
 
-        Task<string> GenerateSummaryAsync(List<MessageDto> messages, string category);
+        Task<string> GenerateSummaryAsync(List<MessageDto> messages, string category, SceneType sceneType = SceneType.StudyAbroad);
 
         IAsyncEnumerable<string> GetChatStreamAsync(List<MessageDto> messages, string category, SceneType sceneType = SceneType.StudyAbroad, string mode = "");
     }

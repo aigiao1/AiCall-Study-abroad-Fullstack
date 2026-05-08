@@ -102,7 +102,7 @@ namespace AICall.API.Controllers
             try
             {
 
-                string rawSummary = await _llmService.GenerateSummaryAsync(request.Conversation, request.Category);
+                string rawSummary = await _llmService.GenerateSummaryAsync(request.Conversation, request.Category, request.SceneType);
 
                 string cleanJson = rawSummary.Replace("```json", "").Replace("```", "").Trim();
 

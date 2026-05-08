@@ -243,6 +243,7 @@
       :visible="showReportModal"
       :summaryData="reportSummary"
       :isLoading="isGeneratingReport"
+      :sceneType="sceneType"
       @update:visible="showReportModal = $event"
       @confirm="closeReportModal"
       @cancel="closeReportModal"

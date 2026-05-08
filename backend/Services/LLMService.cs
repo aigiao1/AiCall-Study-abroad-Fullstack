@@ -75,18 +75,39 @@ Your core instructions:
             return SendToLLMStreamAsync(messages, systemPrompt);
         }
 
-        public async Task<string> GenerateSummaryAsync(List<MessageDto> messages, string category)
+        public async Task<string> GenerateSummaryAsync(List<MessageDto> messages, string category, SceneType sceneType = SceneType.StudyAbroad)
         {
-            var systemPrompt = $@"You are a senior study abroad data analyst.
+            var systemPrompt = sceneType switch
+            {
+                SceneType.MockInterview => $@"You are an executive interview coach. Review the following interview dialogue and output a JSON summary.
+Do not output any Markdown (such as ```json), only pure JSON.
+{{
+""Strengths"": ""What the candidate did well (communication, examples, structure)"",
+""Improvements"": ""What the candidate could improve (specific tips)"",
+""Score"": ""Overall rating out of 10, as a number"",
+""FollowUp"": ""Recommended practice areas for next session""
+}}",
+
+                SceneType.EnglishCoach => $@"You are a language assessment specialist. Review the following English conversation and output a JSON summary.
+Do not output any Markdown (such as ```json), only pure JSON.
+{{
+""Fluency"": ""Assessment of speaking fluency and naturalness"",
+""Vocabulary"": ""Vocabulary range and word choice observations"",
+""Grammar"": ""Grammar accuracy assessment with example errors if any"",
+""Suggestions"": ""Specific practice suggestions for improvement""
+}}",
+
+                _ => $@"You are a senior study abroad data analyst.
 Please extract key information from the following consultation dialogue and output a summary strictly in JSON format.
 Do not output any Markdown formatting (such as ```json), only output a pure JSON string.
 The JSON must include the following fields. If any information is not mentioned in the dialogue, fill in 'Not mentioned':
 {{
-""background"": ""Summarize the student's academic background (school, GPA, language scores, etc.)"",
-""intention"": ""Summarize the study abroad goals (country, degree, major, etc.)"",
-""needs"": ""Summarize the core needs (e.g., unsure how to choose schools, no ideas for personal statements)"",
-""followUp"": ""Suggested next steps""
-}}";
+""Background"": ""Summarize the student's academic background (school, GPA, language scores, etc.)"",
+""Intention"": ""Summarize the study abroad goals (country, degree, major, etc.)"",
+""Needs"": ""Summarize the core needs (e.g., unsure how to choose schools, no ideas for personal statements)"",
+""FollowUp"": ""Suggested next steps""
+}}"
+            };
 
             string rawSummary = await SendToLLMAsync(messages, systemPrompt);
             return rawSummary;
