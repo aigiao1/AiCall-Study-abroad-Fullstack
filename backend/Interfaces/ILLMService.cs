@@ -5,10 +5,10 @@ namespace AICall.API.Interfaces
 {
     public interface ILLMService
     {
-        Task<string> GetChatResponseAsync(List<MessageDto> messages, string category, SceneType sceneType = SceneType.StudyAbroad);
+        Task<string> GetChatResponseAsync(List<MessageDto> messages, string category, SceneType sceneType = SceneType.StudyAbroad, string mode = "");
 
         Task<string> GenerateSummaryAsync(List<MessageDto> messages, string category);
 
-        IAsyncEnumerable<string> GetChatStreamAsync(List<MessageDto> messages, string category, SceneType sceneType = SceneType.StudyAbroad);
+        IAsyncEnumerable<string> GetChatStreamAsync(List<MessageDto> messages, string category, SceneType sceneType = SceneType.StudyAbroad, string mode = "");
     }
 }

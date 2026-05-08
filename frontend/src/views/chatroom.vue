@@ -259,8 +259,10 @@ const waveformProfile = Array.from({ length: WAVE_BAR_COUNT }, (_, index) => {
 // 做一个轻量平滑值，避免 ttsVolume 每一帧看起来过于抽搐
 const smoothedTtsVolume = ref(0);
 let waveformFrameId = 0;
+let waveformActive = true;
 
 const updateWaveSmoothing = () => {
+  if (!waveformActive) return;
   smoothedTtsVolume.value += (ttsVolume.value - smoothedTtsVolume.value) * 0.24;
   waveformFrameId = requestAnimationFrame(updateWaveSmoothing);
 };
@@ -439,10 +441,12 @@ const sendToServer = async (flowToken = stateLock.value) => {
 
   const category = route.query.category || "";
   const subCategory = route.query.sub_category || "";
+  const mode = route.query.mode || "";
   const requestBody = {
     category,
     sub_Category: subCategory,
     sceneType: sceneType.value,
+    mode,
     conversation: messages.value
       .filter((m) => typeof m.content === "string" && m.content.trim().length > 0)
       .map((m) => ({ role: m.role, content: m.content })),
@@ -530,14 +534,16 @@ const restart = () => {
 
 // Lifecycle
 onMounted(() => {
-  // 组件挂载后自动开始通话
+  waveformActive = true;
   startCall();
   waveformFrameId = requestAnimationFrame(updateWaveSmoothing);
 });
 
 onUnmounted(async () => {
+  waveformActive = false;
   if (waveformFrameId) {
     cancelAnimationFrame(waveformFrameId);
+    waveformFrameId = 0;
   }
   stopCallTimer();
   abortStream();

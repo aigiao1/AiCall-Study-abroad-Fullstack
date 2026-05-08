@@ -8,5 +8,6 @@ namespace AICall.API.Dtos.Conversation
         public string Category { get; set; } = string.Empty;
         public string Sub_Category { get; set; } = string.Empty;
         public SceneType SceneType { get; set; } = SceneType.StudyAbroad;
+        public string Mode { get; set; } = string.Empty;
     }
 }

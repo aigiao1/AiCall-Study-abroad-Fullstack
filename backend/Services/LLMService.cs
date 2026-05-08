@@ -63,15 +63,15 @@ Your core instructions:
             };
         }
 
-        public async Task<string> GetChatResponseAsync(List<MessageDto> messages, string category, SceneType sceneType = SceneType.StudyAbroad)
+        public async Task<string> GetChatResponseAsync(List<MessageDto> messages, string category, SceneType sceneType = SceneType.StudyAbroad, string mode = "")
         {
-            var systemPrompt = GetSystemPrompt(sceneType, category);
+            var systemPrompt = GetSystemPrompt(sceneType, category, mode);
             return await SendToLLMAsync(messages, systemPrompt);
         }
 
-        public IAsyncEnumerable<string> GetChatStreamAsync(List<MessageDto> messages, string category, SceneType sceneType = SceneType.StudyAbroad)
+        public IAsyncEnumerable<string> GetChatStreamAsync(List<MessageDto> messages, string category, SceneType sceneType = SceneType.StudyAbroad, string mode = "")
         {
-            var systemPrompt = GetSystemPrompt(sceneType, category);
+            var systemPrompt = GetSystemPrompt(sceneType, category, mode);
             return SendToLLMStreamAsync(messages, systemPrompt);
         }
 

@@ -28,7 +28,7 @@ namespace AICall.API.Controllers
             try
             {
                 // 【调用ai聊天回复】
-                string aiAnswer = await _llmService.GetChatResponseAsync(request.Conversation, request.Category, request.SceneType);
+                string aiAnswer = await _llmService.GetChatResponseAsync(request.Conversation, request.Category, request.SceneType, request.Mode);
                 var response = new
                 {
                     data = new
@@ -62,7 +62,7 @@ namespace AICall.API.Controllers
             try
             {
 
-                var stream = _llmService.GetChatStreamAsync(request.Conversation, request.Category, request.SceneType);
+                var stream = _llmService.GetChatStreamAsync(request.Conversation, request.Category, request.SceneType, request.Mode);
 
                 // 只要大模型吐出一个字，我们就立刻顺着网线扔给前端
                 await foreach (var chunk in stream)
