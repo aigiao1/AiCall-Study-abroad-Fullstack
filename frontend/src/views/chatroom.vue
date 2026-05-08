@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative flex min-h-[100dvh] flex-col overflow-hidden px-3 pb-3 pt-3"
+    class="relative flex h-[100dvh] flex-col overflow-hidden px-3 pb-3 pt-3"
     :data-scene="sceneType"
   >
     <div class="pointer-events-none absolute inset-0 overflow-hidden">

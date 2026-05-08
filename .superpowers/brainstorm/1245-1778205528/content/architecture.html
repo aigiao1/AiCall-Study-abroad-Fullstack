@@ -1,0 +1,90 @@
+<h2>整体实现方案</h2>
+<p class="subtitle">场景切换器 + 语音波形图 — 架构概览</p>
+
+<div class="section">
+  <h3>改动范围一览</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="background:#f8fafc">
+      <th style="padding:10px;text-align:left;border-bottom:1px solid #e2e8f0">层</th>
+      <th style="padding:10px;text-align:left;border-bottom:1px solid #e2e8f0">文件</th>
+      <th style="padding:10px;text-align:left;border-bottom:1px solid #e2e8f0">改动</th>
+    </tr>
+    <tr>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9;font-weight:600">Backend</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9"><code style="font-size:11px">LLMService.cs</code></td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9">根据 SceneType 选择不同 System Prompt</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9;font-weight:600">Backend</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9"><code style="font-size:11px">ChatRequestDto.cs</code></td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9">新增 SceneType 字段</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9;font-weight:600">Backend</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9"><code style="font-size:11px">CallSession.cs</code></td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9">新增 SceneType 字段 + Migration</td>
+    </tr>
+    <tr style="background:#f0f9ff">
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9;font-weight:600">Frontend</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9"><code style="font-size:11px">HomeView.vue</code></td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9">重写为 3 张场景入口卡片</td>
+    </tr>
+    <tr style="background:#fefce8">
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9;font-weight:600">Frontend</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9"><code style="font-size:11px">StudyAbroadView.vue</code></td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9"><strong>NEW</strong> 留学顾问详情页（现有逻辑迁移过来）</td>
+    </tr>
+    <tr style="background:#fefce8">
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9;font-weight:600">Frontend</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9"><code style="font-size:11px">InterviewView.vue</code></td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9"><strong>NEW</strong> 模拟面试官详情页</td>
+    </tr>
+    <tr style="background:#fefce8">
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9;font-weight:600">Frontend</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9"><code style="font-size:11px">EnglishCoachView.vue</code></td>
+      <td style="padding:8px 10px;border-bottom:1px solid #f1f5f9"><strong>NEW</strong> 英语教练详情页</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 10px;font-weight:600">Frontend</td>
+      <td style="padding:8px 10px"><code style="font-size:11px">router/index.js</code></td>
+      <td style="padding:8px 10px">新增 3 条路由 + 1 条首页路由调整</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 10px;font-weight:600">Frontend</td>
+      <td style="padding:8px 10px"><code style="font-size:11px">useMicrophone.js</code></td>
+      <td style="padding:8px 10px">暴露 micFrequencyData 给波形图组件</td>
+    </tr>
+    <tr style="background:#fefce8">
+      <td style="padding:8px 10px;font-weight:600">Frontend</td>
+      <td style="padding:8px 10px"><code style="font-size:11px">WaveformVisualizer.vue</code></td>
+      <td style="padding:8px 10px"><strong>NEW</strong> 语音波形图组件（Canvas）</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>后端核心改动</h3>
+  <div style="background:#f8fafc;border-radius:12px;padding:16px">
+    <p style="font-weight:600;font-size:14px;margin:0 0 8px">SceneType 枚举值：</p>
+    <div style="display:flex;gap:8px">
+      <code style="background:#e0f2fe;padding:4px 10px;border-radius:6px;font-size:12px">StudyAbroad</code>
+      <code style="background:#fef3c7;padding:4px 10px;border-radius:6px;font-size:12px">MockInterview</code>
+      <code style="background:#d1fae5;padding:4px 10px;border-radius:6px;font-size:12px">EnglishCoach</code>
+    </div>
+    <p style="font-size:13px;color:#64748b;margin:10px 0 0">LLMService 根据 SceneType 选择不同的 System Prompt，无需新增接口</p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>前端页面结构</h3>
+  <div style="background:#f8fafc;border-radius:12px;padding:16px">
+    <pre style="margin:0;font-size:12px;line-height:1.8;color:#475569">
+/ (Login) ──→ /home (3 场景入口卡)
+                 ├── 🎓 留学顾问 → /study-abroad
+                 ├── 🤖 模拟面试 → /interview
+                 └── 🌍 英语教练 → /english-coach
+
+每个详情页独立路由，保留现有 /chatroom 通话页
+各详情页有独立的配色主题和排版风格</pre>
+  </div>
+</div>
