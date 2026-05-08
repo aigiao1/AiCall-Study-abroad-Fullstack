@@ -90,7 +90,6 @@ namespace AICall.API.Controllers
 
 
         // 3. 生成报告接口
-
         [HttpPost("report")]
         [Authorize]
         public async Task<IActionResult> GenerateReport([FromBody] ChatRequestDto request)
@@ -101,35 +100,29 @@ namespace AICall.API.Controllers
             string UserId = User.GetUserId();
             try
             {
-
                 string rawSummary = await _llmService.GenerateSummaryAsync(request.Conversation, request.Category, request.SceneType);
-
                 string cleanJson = rawSummary.Replace("```json", "").Replace("```", "").Trim();
 
-                var summaryObj = System.Text.Json.JsonSerializer.Deserialize<LLMSummaryResultDto>(cleanJson);
+                // Parse as dynamic dictionary to support all scene-specific fields
+                var summaryDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(cleanJson);
+                if (summaryDict == null) throw new Exception("LLM returned unparseable JSON");
 
-                if (summaryObj == null) throw new Exception("大模型返回的数据解析失败");
+                // Build dynamic response — passes through all LLM fields + Topic
+                var summaryFields = new Dictionary<string, object> { ["Topic"] = request.Category };
+                foreach (var kv in summaryDict)
+                {
+                    summaryFields[kv.Key] = kv.Value?.ToString() ?? "";
+                }
 
-                // 4. 存数据库！(直接用你写好的 Mapper，把干净的 JSON 文本存进去)
+                // Store raw JSON in DB
                 var sessionModel = request.ToCallSessionFromDto(cleanJson, UserId);
                 await _sessionRepo.CreateSessionAsync(sessionModel);
 
-                // 5. 拼装前端需要的最终格式返回
                 var finalReport = new
                 {
                     data = new
                     {
-                        report_msg = new
-                        {
-                            summary = new
-                            {
-                                Topic = request.Category,           // 对应前端的 "对话主题"
-                                Background = summaryObj.Background, // 对应前端的 "学术背景"
-                                Intention = summaryObj.Intention,   // 对应前端的 "留学意向"
-                                Needs = summaryObj.Needs,           // 对应前端的 "核心诉求"
-                                FollowUp = summaryObj.FollowUp      // 对应前端的 "下一步计划"
-                            }
-                        }
+                        report_msg = new { summary = summaryFields }
                     }
                 };
 
@@ -137,8 +130,8 @@ namespace AICall.API.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"报告生成失败: {ex.Message}");
-                return StatusCode(500, "生成报告失败，请重试");
+                Console.WriteLine($"Report generation failed: {ex.Message}");
+                return StatusCode(500, "Failed to generate report, please retry");
             }
         }
     }

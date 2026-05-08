@@ -17,30 +17,20 @@ export function useCallReport() {
     showReportModal.value = false;
   };
 
-  // 拿着聊天记录去后台生成总结报告
   const generateConversationReport = async (messagesArray, sceneType) => {
     isGeneratingReport.value = true;
     try {
       const category = route.query.category || "";
       const subCategory = route.query.sub_category || "";
-      const result = await LLMServer.generateReport(
-        messagesArray,
-        category,
-        subCategory,
-        sceneType
-      );
-      if (
-        result.data &&
-        result.data.report_msg &&
-        result.data.report_msg.summary
-      ) {
+      const result = await LLMServer.generateReport(messagesArray, category, subCategory, sceneType);
+      if (result?.data?.report_msg?.summary) {
         reportSummary.value = result.data.report_msg.summary;
       } else {
-        reportSummary.value = {};
+        reportSummary.value = { Info: "Summary unavailable — the AI service may be temporarily busy." };
       }
     } catch (error) {
-      console.error("生成报告失败:", error);
-      reportSummary.value = {};
+      console.error("Report generation failed:", error);
+      reportSummary.value = { Info: "Summary unavailable — the AI service may be temporarily busy." };
     } finally {
       isGeneratingReport.value = false;
     }
