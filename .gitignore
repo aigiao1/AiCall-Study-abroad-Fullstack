@@ -11,4 +11,5 @@ backend/bin/
 backend/obj/
 
 # 前端依赖 (超级大，千万别交)
-frontend/node_modules/.superpowers/
+frontend/node_modules/
+.superpowers/
