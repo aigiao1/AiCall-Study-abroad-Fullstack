@@ -148,29 +148,16 @@
                 width: '128px', height: '128px',
               }"
             ></div>
+          </template>
+
+          <template v-else-if="state === 'SPEAKING'">
             <WaveformVisualizer
-              :volume="microphoneVolume"
+              :volume="ttsVolume"
               :bar-count="48"
               :color="waveformColor"
               class="relative z-10 w-full h-16"
             />
           </template>
-
-          <div
-            v-else-if="state === 'SPEAKING'"
-            class="relative flex h-[76px] w-[68%] min-w-[240px] items-end justify-center gap-[5px]"
-          >
-            <span
-              v-for="(barStyle, index) in waveformStyles"
-              :key="`bar-${index}`"
-              class="flex-1 rounded-full transition-all duration-150"
-              :style="{
-                background: `linear-gradient(to top, var(--scene-speak-from), var(--scene-speak-via), var(--scene-speak-to))`,
-                boxShadow: 'var(--scene-speak-shadow)',
-                ...barStyle,
-              }"
-            ></span>
-          </div>
 
           <div
             v-else-if="state === 'WAITING'"
@@ -314,23 +301,6 @@ const {
 const sceneType = computed(() => Number(route.query.scene) || 1);
 const waveformColor = computed(() => ({ 1: "#0ea5e9", 2: "#fbbf24", 3: "#10b981" }[sceneType.value] || "#0ea5e9"));
 
-// TTS waveform
-const WAVE_BAR_COUNT = 36;
-const waveformProfile = Array.from({ length: WAVE_BAR_COUNT }, (_, i) => {
-  const center = (WAVE_BAR_COUNT - 1) / 2;
-  const d = (i - center) / (WAVE_BAR_COUNT * 0.22);
-  return { gaussian: Math.exp(-(d * d) / 2), jitter: 0.82 + Math.random() * 0.36 };
-});
-
-const smoothedTtsVolume = ref(0);
-let waveformFrameId = 0;
-let waveformActive = true;
-
-const updateWaveSmoothing = () => {
-  if (!waveformActive) return;
-  smoothedTtsVolume.value += (ttsVolume.value - smoothedTtsVolume.value) * 0.24;
-  waveformFrameId = requestAnimationFrame(updateWaveSmoothing);
-};
 
 // Mic halo (restored pulsing circles)
 const microphoneHaloStyle = computed(() => ({
@@ -353,14 +323,6 @@ const stateLabel = computed(() => {
   const m = { READY: "Ready", IDLE: "Idle", LISTENING: "Listening", WAITING: "Thinking", SPEAKING: "Speaking", ENDED: "Finished" };
   return m[state.value] || "Live";
 });
-
-const waveformStyles = computed(() =>
-  waveformProfile.map(({ gaussian, jitter }) => {
-    const e = Math.max(0.05, smoothedTtsVolume.value);
-    const s = Math.max(0.1, Math.pow(e, 0.72) * gaussian * jitter * 1.75);
-    return { height: "56px", transform: `scaleY(${s})`, transformOrigin: "center bottom", opacity: `${0.45 + Math.min(0.48, s * 0.55)}` };
-  }),
-);
 
 const formatTime = (ts) => new Date(ts).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
 
@@ -472,14 +434,10 @@ const endCall = async () => {
 const restart = () => router.push("/home");
 
 onMounted(() => {
-  waveformActive = true;
   startCall();
-  waveformFrameId = requestAnimationFrame(updateWaveSmoothing);
 });
 
 onUnmounted(async () => {
-  waveformActive = false;
-  if (waveformFrameId) { cancelAnimationFrame(waveformFrameId); waveformFrameId = 0; }
   stopCallTimer(); abortStream();
   await closeRecognizer(); stopTyping(); stopCurrentAudio();
 });

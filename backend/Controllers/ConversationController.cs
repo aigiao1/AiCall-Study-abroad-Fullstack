@@ -136,8 +136,12 @@ namespace AICall.API.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Report generation failed: {ex.Message}");
-                return StatusCode(500, "Failed to generate report, please retry");
+                Console.WriteLine($"Report generation failed, using fallback: {ex.Message}");
+                // Save session with fallback summary so messages aren't lost
+                var fallbackJson = $"{{\"Info\":\"Summary unavailable — conversation too short or AI busy.\"}}";
+                var sessionModel = request.ToCallSessionFromDto(fallbackJson, UserId);
+                await _sessionRepo.CreateSessionAsync(sessionModel);
+                return Ok(new { data = new { report_msg = new { summary = new Dictionary<string, object> { ["Info"] = "Summary unavailable — conversation too short or AI busy." } } } });
             }
         }
     }
