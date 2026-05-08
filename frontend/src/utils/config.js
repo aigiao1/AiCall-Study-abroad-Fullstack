@@ -4,7 +4,7 @@ export const CONFIG = {
   workerUrl: "https://your-asr-proxy.workers.dev",
   vad: {
     silenceThreshold: 20,
-    silenceDuration: 1000, // 核心逻辑：从1800优化到1200，面试必讲！不要动它
+    silenceDuration: 600, // 从 1000ms 优化到 600ms，更快触发 ASR
     minRecordDuration: 800,
     maxRecordDuration: 60000,
   },

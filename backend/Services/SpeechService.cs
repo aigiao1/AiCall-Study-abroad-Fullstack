@@ -25,7 +25,7 @@ namespace AICall.API.Services
             var model = _config["ASR:ModelName"];
 
             var client = _httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(10);
+            client.Timeout = TimeSpan.FromSeconds(5);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
             // 【核心：构建 FormData 表单数据】
@@ -102,7 +102,7 @@ namespace AICall.API.Services
             var voice = _config["TTS:Voice"];
 
             var client = _httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(10);
+            client.Timeout = TimeSpan.FromSeconds(5);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
             var requestBody = new
