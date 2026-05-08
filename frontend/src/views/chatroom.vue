@@ -1,34 +1,28 @@
 <template>
-  <div class="relative flex min-h-[100dvh] flex-col overflow-hidden px-3 pb-3 pt-3">
+  <div class="relative flex min-h-[100dvh] flex-col overflow-hidden px-3 pb-3 pt-3" :class="theme.pageBg">
     <div class="pointer-events-none absolute inset-0 overflow-hidden">
-      <div class="absolute left-1/2 top-[38%] h-[21rem] w-[21rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,_rgba(56,189,248,0.26)_0%,_rgba(125,211,252,0.13)_34%,_transparent_72%)] blur-3xl"></div>
+      <div class="absolute left-1/2 top-[38%] h-[21rem] w-[21rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" :class="theme.pageGlow"></div>
     </div>
 
     <div class="relative z-10 flex min-h-0 flex-1 flex-col gap-3">
-      <header class="rounded-[28px] bg-white/72 px-4 py-3 shadow-[0_18px_45px_rgba(148,163,184,0.14)] backdrop-blur-2xl">
+      <header class="rounded-[28px] px-4 py-3" :class="[theme.headerBg, theme.headerShadow, theme.headerBlur, theme.headerBorder]">
         <div class="flex items-start justify-between gap-3">
           <div class="flex items-center gap-3">
-            <div class="overflow-hidden rounded-[18px] bg-white/88 shadow-[0_8px_24px_rgba(125,211,252,0.18)]">
+            <div class="overflow-hidden rounded-[18px] shadow-[0_8px_24px_rgba(125,211,252,0.18)]" :class="theme.avatarBg">
               <img src="../assets/image/robot.png" alt="AI" class="h-11 w-11 object-cover" />
             </div>
             <div>
-              <p class="font-[var(--font-display)] text-[2rem] font-semibold leading-none tracking-[0.01em] text-slate-900">
-                Claudio
-              </p>
-              <p class="mt-1 text-[12px] text-slate-500">
-                {{ statusText }}
-              </p>
+              <p class="font-[var(--font-display)] text-[2rem] font-semibold leading-none tracking-[0.01em]" :class="theme.titleColor">Claudio</p>
+              <p class="mt-1 text-[12px]" :class="theme.subColor">{{ statusText }}</p>
             </div>
           </div>
-          <p class="rounded-full bg-white/84 px-3 py-1.5 font-[var(--font-mono)] text-[11px] font-medium tracking-[0.24em] text-slate-500 shadow-[0_8px_20px_rgba(148,163,184,0.12)]">
-            {{ callTimer }}
-          </p>
+          <p class="rounded-full px-3 py-1.5 font-[var(--font-mono)] text-[11px] font-medium tracking-[0.24em] shadow-[0_8px_20px_rgba(148,163,184,0.12)]" :class="[theme.timerBg, theme.timerColor]">{{ callTimer }}</p>
         </div>
       </header>
 
       <main
         ref="messagesRef"
-        class="min-h-0 flex-1 overflow-y-auto rounded-[30px] bg-white/60 px-3 py-4 shadow-[0_18px_45px_rgba(148,163,184,0.12)] backdrop-blur-2xl"
+        class="min-h-0 flex-1 overflow-y-auto rounded-[30px] px-3 py-4" :class="[theme.msgBg, theme.msgShadow, theme.msgBlur]"
       >
         <TransitionGroup
           tag="div"
@@ -49,7 +43,7 @@
           >
             <div
               v-if="msg.role === 'salesman'"
-              class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-[16px] bg-white/88 shadow-[0_8px_20px_rgba(148,163,184,0.12)]"
+              class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-[16px] shadow-[0_8px_20px_rgba(148,163,184,0.12)]" :class="theme.avatarBg"
             >
               <img src="../assets/image/robot.png" alt="AI" class="h-full w-full object-cover" />
             </div>
@@ -57,11 +51,7 @@
             <div class="max-w-[82%]">
               <div
                 class="rounded-[22px] px-4 py-3 shadow-[0_10px_24px_rgba(148,163,184,0.1)]"
-                :class="
-                  msg.role === 'customer'
-                    ? 'bg-sky-50/92 text-slate-700'
-                    : 'bg-white/94 text-slate-700'
-                "
+                :class="msg.role === 'customer' ? theme.bubbleUser : theme.bubbleAi"
               >
                 <p class="whitespace-pre-wrap text-[15px] leading-8">
                   {{ msg.content }}
@@ -69,8 +59,8 @@
               </div>
 
               <p
-                class="mt-1.5 font-[var(--font-mono)] text-[11px] text-slate-400"
-                :class="{ 'text-right': msg.role === 'customer' }"
+                class="mt-1.5 font-[var(--font-mono)] text-[11px]"
+                :class="[theme.timeColor, { 'text-right': msg.role === 'customer' }]"
               >
                 {{ formatTime(msg.timestamp) }}
               </p>
@@ -79,26 +69,26 @@
         </TransitionGroup>
       </main>
 
-      <section class="rounded-[30px] bg-white/70 px-4 py-4 shadow-[0_-10px_30px_rgba(0,0,0,0.05),0_18px_45px_rgba(148,163,184,0.14)] backdrop-blur-2xl">
+      <section class="rounded-[30px] px-4 py-4" :class="[theme.ctrlBg, theme.ctrlShadow, theme.ctrlBlur]">
         <div class="mb-3 flex items-center justify-between">
-          <p class="text-[11px] font-semibold uppercase tracking-[0.32em] text-sky-700/70">
-            {{ stateLabel }}
-          </p>
-          <span class="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.28em] text-slate-400">
-            {{ state }}
-          </span>
+          <p class="text-[11px] font-semibold uppercase tracking-[0.32em]" :class="theme.stateLabel">{{ stateLabel }}</p>
+          <span class="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.28em]" :class="theme.stateTag">{{ state }}</span>
         </div>
 
-        <div class="relative flex h-[132px] items-center justify-center overflow-hidden rounded-[26px] bg-white/58">
-          <div class="absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,_rgba(56,189,248,0.18)_0%,_rgba(125,211,252,0.1)_36%,_transparent_72%)] blur-2xl"></div>
+        <div class="relative flex h-[132px] items-center justify-center overflow-hidden rounded-[26px]" :class="theme.vizBg">
+          <div class="absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl" :class="theme.glowDot"></div>
 
-          <WaveformVisualizer
-            v-if="state === 'LISTENING'"
-            :volume="microphoneVolume"
-            :bar-count="48"
-            color="#10b981"
-            class="w-full h-16"
-          />
+          <!-- LISTENING: halo circles + waveform -->
+          <template v-if="state === 'LISTENING'">
+            <div class="absolute rounded-full transition-transform duration-75" :style="microphoneHaloStyle" :class="theme.haloOuter"></div>
+            <div class="absolute rounded-full transition-transform duration-75" :style="microphoneOuterHaloStyle" :class="theme.haloInner"></div>
+            <WaveformVisualizer
+              :volume="microphoneVolume"
+              :bar-count="48"
+              :color="theme.waveformColor"
+              class="relative z-10 w-full h-16"
+            />
+          </template>
 
           <div
             v-else-if="state === 'SPEAKING'"
@@ -107,21 +97,22 @@
             <span
               v-for="(barStyle, index) in waveformStyles"
               :key="`bar-${index}`"
-              class="flex-1 rounded-full bg-gradient-to-t from-sky-400 via-sky-500 to-indigo-500 shadow-[0_0_18px_rgba(56,189,248,0.2)] transition-all duration-150"
+              class="flex-1 rounded-full transition-all duration-150"
+              :class="theme.speakBar"
               :style="barStyle"
             ></span>
           </div>
 
           <div
             v-else-if="state === 'WAITING'"
-            class="relative h-10 w-40 overflow-hidden rounded-full bg-sky-50/70"
+            class="relative h-10 w-40 overflow-hidden rounded-full" :class="theme.waitingBar"
           >
-            <div class="absolute inset-y-0 left-[-30%] w-[34%] bg-gradient-to-r from-transparent via-sky-300/60 to-transparent blur-sm animate-[waitingGlow_1.4s_linear_infinite]"></div>
+            <div class="absolute inset-y-0 left-[-30%] w-[34%] bg-gradient-to-r from-transparent to-transparent blur-sm animate-[waitingGlow_1.4s_linear_infinite]" :class="theme.waitingGlow"></div>
           </div>
 
           <div
             v-else-if="state === 'READY' || state === 'IDLE'"
-            class="h-[3px] w-28 rounded-full bg-sky-400/60 shadow-[0_0_18px_rgba(56,189,248,0.22)]"
+            class="h-[3px] w-28 rounded-full" :class="[theme.readyBar, theme.readyShadow]"
           ></div>
 
           <div
@@ -132,26 +123,29 @@
 
         <div v-if="state !== 'ENDED'" class="mt-4">
           <button
-            class="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-slate-900/96 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(15,23,42,0.16)] transition hover:bg-sky-600"
+            class="flex h-12 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold transition"
+            :class="[theme.endBtnBg, theme.endBtnText, theme.endBtnHover, theme.endBtnShadow]"
             @click="endCall"
             title="End call"
             aria-label="End call"
           >
-            <PhoneOff :size="16" :stroke-width="1.5" class="text-white" />
+            <PhoneOff :size="16" :stroke-width="1.5" />
             <span>End Call</span>
           </button>
         </div>
 
         <div v-else class="mt-4 grid grid-cols-2 gap-3">
           <button
-            class="flex h-12 items-center justify-center gap-2 rounded-full bg-white/86 text-sm font-semibold text-slate-600 shadow-[0_10px_24px_rgba(148,163,184,0.12)] transition hover:text-sky-600"
+            class="flex h-12 items-center justify-center gap-2 rounded-full text-sm font-semibold transition"
+            :class="[theme.backBtnBg, theme.backBtnText, theme.backBtnHover]"
             @click="restart"
           >
-            <ArrowLeft :size="16" :stroke-width="1.5" class="text-slate-500" />
+            <ArrowLeft :size="16" :stroke-width="1.5" />
             <span>Back</span>
           </button>
           <button
-            class="flex h-12 items-center justify-center rounded-full bg-slate-900/96 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(15,23,42,0.16)] transition hover:bg-sky-600"
+            class="flex h-12 items-center justify-center rounded-full text-sm font-semibold transition"
+            :class="[theme.summaryBtnBg, theme.summaryBtnText, theme.summaryBtnHover]"
             @click="showReportModal = true"
           >
             Summary
@@ -194,7 +188,85 @@ import { notify } from "../utils/toast.js";
 const router = useRouter();
 const route = useRoute();
 
-// 状态机
+// Scene-based theme
+const sceneType = computed(() => Number(route.query.scene) || 1);
+
+const theme = computed(() => {
+  const themes = {
+    1: { // Study Abroad — Sky Blue + Ivory
+      pageBg: '',
+      pageGlow: 'bg-[radial-gradient(circle,_rgba(56,189,248,0.26)_0%,_rgba(125,211,252,0.13)_34%,_transparent_72%)]',
+      headerBg: 'bg-white/72', headerShadow: 'shadow-[0_18px_45px_rgba(148,163,184,0.14)]', headerBlur: 'backdrop-blur-2xl', headerBorder: '',
+      avatarBg: 'bg-white/88',
+      titleColor: 'text-slate-900', subColor: 'text-slate-500',
+      timerBg: 'bg-white/84', timerColor: 'text-slate-500',
+      msgBg: 'bg-white/60', msgShadow: 'shadow-[0_18px_45px_rgba(148,163,184,0.12)]', msgBlur: 'backdrop-blur-2xl',
+      bubbleUser: 'bg-sky-50/92 text-slate-700', bubbleAi: 'bg-white/94 text-slate-700',
+      timeColor: 'text-slate-400',
+      ctrlBg: 'bg-white/70', ctrlShadow: 'shadow-[0_-10px_30px_rgba(0,0,0,0.05),0_18px_45px_rgba(148,163,184,0.14)]', ctrlBlur: 'backdrop-blur-2xl',
+      stateLabel: 'text-sky-700/70', stateTag: 'text-slate-400',
+      vizBg: 'bg-white/58',
+      glowDot: 'bg-[radial-gradient(circle,_rgba(56,189,248,0.18)_0%,_rgba(125,211,252,0.1)_36%,_transparent_72%)]',
+      haloOuter: 'bg-sky-400/30', haloInner: 'bg-sky-300/20',
+      waveformColor: '#0ea5e9',
+      speakBar: 'bg-gradient-to-t from-sky-400 via-sky-500 to-indigo-500 shadow-[0_0_18px_rgba(56,189,248,0.2)]',
+      waitingBar: 'bg-sky-50/70', waitingGlow: 'via-sky-300/60',
+      readyBar: 'bg-sky-400/60', readyShadow: 'shadow-[0_0_18px_rgba(56,189,248,0.22)]',
+      endBtnBg: 'bg-slate-900/96', endBtnText: 'text-white', endBtnHover: 'hover:bg-sky-600', endBtnShadow: 'shadow-[0_16px_36px_rgba(15,23,42,0.16)]',
+      backBtnBg: 'bg-white/86', backBtnText: 'text-slate-600', backBtnHover: 'hover:text-sky-600',
+      summaryBtnBg: 'bg-slate-900/96', summaryBtnText: 'text-white', summaryBtnHover: 'hover:bg-sky-600',
+    },
+    2: { // Mock Interview — Dark Slate + Amber
+      pageBg: 'bg-slate-950',
+      pageGlow: 'bg-[radial-gradient(circle,_rgba(251,191,36,0.18)_0%,_rgba(245,158,11,0.08)_34%,_transparent_72%)]',
+      headerBg: 'bg-slate-900/80', headerShadow: '', headerBlur: 'backdrop-blur', headerBorder: 'border border-white/10',
+      avatarBg: 'bg-white/10',
+      titleColor: 'text-white', subColor: 'text-slate-400',
+      timerBg: 'bg-white/8', timerColor: 'text-slate-400',
+      msgBg: 'bg-slate-900/60', msgShadow: '', msgBlur: 'backdrop-blur', msgBorder: 'border border-white/5',
+      bubbleUser: 'bg-amber-400/12 text-slate-200', bubbleAi: 'bg-white/8 text-slate-200',
+      timeColor: 'text-slate-500',
+      ctrlBg: 'bg-slate-900/80', ctrlShadow: 'shadow-[0_-10px_30px_rgba(0,0,0,0.3)]', ctrlBlur: 'backdrop-blur', ctrlBorder: 'border border-white/10',
+      stateLabel: 'text-amber-400/80', stateTag: 'text-slate-500',
+      vizBg: 'bg-white/5',
+      glowDot: 'bg-[radial-gradient(circle,_rgba(251,191,36,0.22)_0%,_rgba(245,158,11,0.08)_36%,_transparent_72%)]',
+      haloOuter: 'bg-amber-400/30', haloInner: 'bg-amber-300/20',
+      waveformColor: '#fbbf24',
+      speakBar: 'bg-gradient-to-t from-amber-400 via-amber-500 to-orange-500 shadow-[0_0_18px_rgba(251,191,36,0.25)]',
+      waitingBar: 'bg-amber-400/10', waitingGlow: 'via-amber-400/40',
+      readyBar: 'bg-amber-400/50', readyShadow: 'shadow-[0_0_18px_rgba(251,191,36,0.25)]',
+      endBtnBg: 'bg-amber-400', endBtnText: 'text-slate-900', endBtnHover: 'hover:bg-amber-300', endBtnShadow: 'shadow-[0_0_30px_rgba(251,191,36,0.2)]',
+      backBtnBg: 'bg-white/8', backBtnText: 'text-slate-300', backBtnHover: 'hover:text-amber-400',
+      summaryBtnBg: 'bg-amber-400', summaryBtnText: 'text-slate-900', summaryBtnHover: 'hover:bg-amber-300',
+    },
+    3: { // English Coach — Mint Green + Warm White
+      pageBg: '',
+      pageGlow: 'bg-[radial-gradient(circle,_rgba(16,185,129,0.22)_0%,_rgba(52,211,153,0.1)_34%,_transparent_72%)]',
+      headerBg: 'bg-gradient-to-br from-emerald-50 to-green-50', headerShadow: 'shadow-[0_18px_45px_rgba(148,163,184,0.14)]', headerBlur: 'backdrop-blur-2xl', headerBorder: 'border border-emerald-200/40',
+      avatarBg: 'bg-white/88',
+      titleColor: 'text-slate-900', subColor: 'text-slate-500',
+      timerBg: 'bg-white/84', timerColor: 'text-slate-500',
+      msgBg: 'bg-white/60', msgShadow: 'shadow-[0_18px_45px_rgba(148,163,184,0.12)]', msgBlur: 'backdrop-blur-2xl',
+      bubbleUser: 'bg-emerald-50/92 text-slate-700', bubbleAi: 'bg-white/94 text-slate-700',
+      timeColor: 'text-slate-400',
+      ctrlBg: 'bg-white/70', ctrlShadow: 'shadow-[0_-10px_30px_rgba(0,0,0,0.05),0_18px_45px_rgba(148,163,184,0.14)]', ctrlBlur: 'backdrop-blur-2xl',
+      stateLabel: 'text-emerald-700/70', stateTag: 'text-slate-400',
+      vizBg: 'bg-white/58',
+      glowDot: 'bg-[radial-gradient(circle,_rgba(16,185,129,0.16)_0%,_rgba(52,211,153,0.08)_36%,_transparent_72%)]',
+      haloOuter: 'bg-emerald-400/30', haloInner: 'bg-emerald-300/20',
+      waveformColor: '#10b981',
+      speakBar: 'bg-gradient-to-t from-emerald-400 via-emerald-500 to-teal-500 shadow-[0_0_18px_rgba(16,185,129,0.2)]',
+      waitingBar: 'bg-emerald-50/70', waitingGlow: 'via-emerald-300/60',
+      readyBar: 'bg-emerald-400/60', readyShadow: 'shadow-[0_0_18px_rgba(16,185,129,0.22)]',
+      endBtnBg: 'bg-emerald-500', endBtnText: 'text-white', endBtnHover: 'hover:bg-emerald-600', endBtnShadow: 'shadow-[0_8px_24px_rgba(16,185,129,0.3)]',
+      backBtnBg: 'bg-white/86', backBtnText: 'text-slate-600', backBtnHover: 'hover:text-emerald-600',
+      summaryBtnBg: 'bg-slate-900/96', summaryBtnText: 'text-white', summaryBtnHover: 'hover:bg-emerald-600',
+    },
+  };
+  return themes[sceneType.value] || themes[1];
+});
+
+// State machine
 const state = ref("READY");
 const stateLock = ref("");
 
@@ -212,7 +284,7 @@ const createFlowToken = () => {
 
 const isCurrentFlow = (token) => stateLock.value === token;
 
-// Composables（能力组件）
+// Composables
 const { startTyping, stopTyping } = useTypingEffect();
 const { fetchChatStream, abortStream } = useSSEChatStream();
 const { callTimer, startCallTimer, stopCallTimer } = useCallTimer();
@@ -241,22 +313,16 @@ const {
   playTTSAudio,
 } = useTTSPlayer();
 
-// 预先生成 36 根 bar 的随机权重：
-// 1. 中间高，两边低（高斯分布）
-// 2. 每根 bar 再带一点随机抖动，避免排排坐的机械感
+// TTS waveform profile
 const WAVE_BAR_COUNT = 36;
 const waveformProfile = Array.from({ length: WAVE_BAR_COUNT }, (_, index) => {
   const center = (WAVE_BAR_COUNT - 1) / 2;
   const distance = (index - center) / (WAVE_BAR_COUNT * 0.22);
   const gaussian = Math.exp(-(distance * distance) / 2);
   const jitter = 0.82 + Math.random() * 0.36;
-  return {
-    gaussian,
-    jitter,
-  };
+  return { gaussian, jitter };
 });
 
-// 做一个轻量平滑值，避免 ttsVolume 每一帧看起来过于抽搐
 const smoothedTtsVolume = ref(0);
 let waveformFrameId = 0;
 let waveformActive = true;
@@ -267,34 +333,44 @@ const updateWaveSmoothing = () => {
   waveformFrameId = requestAnimationFrame(updateWaveSmoothing);
 };
 
-// Computed（UI 展示）
-const statusText = computed(() => {
-  const statusMap = {
-    READY: "Ready to begin",
-    GREETING: "Preparing greeting",
-    IDLE: "Awaiting your voice",
-    LISTENING: "Listening now",
-    RECOGNIZING: "Recognizing speech",
-    WAITING: "Thinking",
-    SPEAKING: "AI is speaking",
-    ENDED: "Call ended",
+// Mic halo styles (restored pulsing circles)
+const microphoneHaloStyle = computed(() => {
+  const scale = 1 + microphoneVolume.value * 0.5;
+  const opacity = 0.12 + microphoneVolume.value * 0.28;
+  return {
+    width: '88px', height: '88px',
+    transform: `scale(${scale})`,
+    opacity: Math.min(0.5, opacity),
   };
-  return statusMap[state.value] || state.value;
+});
+
+const microphoneOuterHaloStyle = computed(() => {
+  const scale = 1 + microphoneVolume.value * 0.8;
+  const opacity = 0.06 + microphoneVolume.value * 0.16;
+  return {
+    width: '128px', height: '128px',
+    transform: `scale(${scale})`,
+    opacity: Math.min(0.3, opacity),
+  };
+});
+
+// Computed
+const statusText = computed(() => {
+  const map = {
+    READY: "Ready to begin", GREETING: "Preparing greeting", IDLE: "Awaiting your voice",
+    LISTENING: "Listening now", RECOGNIZING: "Recognizing speech", WAITING: "Thinking",
+    SPEAKING: "AI is speaking", ENDED: "Call ended",
+  };
+  return map[state.value] || state.value;
 });
 
 const stateLabel = computed(() => {
-  const labelMap = {
-    READY: "Ready",
-    IDLE: "Idle",
-    LISTENING: "Listening",
-    WAITING: "Thinking",
-    SPEAKING: "Speaking",
-    ENDED: "Finished",
+  const map = {
+    READY: "Ready", IDLE: "Idle", LISTENING: "Listening",
+    WAITING: "Thinking", SPEAKING: "Speaking", ENDED: "Finished",
   };
-  return labelMap[state.value] || "Live";
+  return map[state.value] || "Live";
 });
-
-const sceneType = computed(() => Number(route.query.scene) || 1);
 
 const waveformStyles = computed(() =>
   waveformProfile.map(({ gaussian, jitter }) => {
@@ -309,228 +385,121 @@ const waveformStyles = computed(() =>
   }),
 );
 
-// Utils
 const formatTime = (timestamp) => {
-  return new Date(timestamp).toLocaleTimeString("zh-CN", {
-    hour: "2-digit",
-    minute: "2-digit",
+  return new Date(timestamp).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+};
+
+// TTS playback
+const playTTS = async (text, onStart, onEnd, flowToken = stateLock.value) => {
+  await playTTSAudio(text, recognizer, state, abortStream, handleVoiceResult, onStart, () => {
+    if (isCurrentFlow(flowToken) && isAudioTrulyFinished.value) onEnd?.();
   });
 };
 
-// 把脏活累活全丢给播音，只留个对讲机
-const playTTS = async (text, onStart, onEnd, flowToken = stateLock.value) => {
-  await playTTSAudio(
-    text,
-    recognizer,
-    state,
-    abortStream,
-    handleVoiceResult,
-    onStart,
-    () => {
-      if (isCurrentFlow(flowToken) && isAudioTrulyFinished.value) {
-        onEnd?.();
-      }
-    },
-  );
-};
-
-// 核心流程：问候 -> 监听 -> 识别 -> 请求 -> 播放 -> 再监听
+// Greeting
 const playGreeting = async (flowToken) => {
   setState("WAITING", flowToken);
-  // 优先使用路由参数传入的 speechText 作为开场白，否则使用默认问候语
-  const greeting =
-    route.query.speechText ||
-    CONFIG.greetings[Math.floor(Math.random() * CONFIG.greetings.length)];
-
-  await playTTS(
-    greeting,
-    (audioEl) => {
-      if (!isCurrentFlow(flowToken)) return;
-      setState("SPEAKING", flowToken);
-      const currentAiMessageId = addMessage("salesman", " ");
-      startTyping(greeting, audioEl, (currentText) => {
-        updateMessageContent(currentAiMessageId, currentText);
-      });
-    },
-    async () => {
-      if (!isCurrentFlow(flowToken) || state.value === "ENDED" || !isAudioTrulyFinished.value) return;
-      await startListening(flowToken);
-    },
-    flowToken,
-  );
+  const greeting = route.query.speechText || CONFIG.greetings[Math.floor(Math.random() * CONFIG.greetings.length)];
+  await playTTS(greeting, (audioEl) => {
+    if (!isCurrentFlow(flowToken)) return;
+    setState("SPEAKING", flowToken);
+    const id = addMessage("salesman", " ");
+    startTyping(greeting, audioEl, (t) => updateMessageContent(id, t));
+  }, async () => {
+    if (!isCurrentFlow(flowToken) || state.value === "ENDED" || !isAudioTrulyFinished.value) return;
+    await startListening(flowToken);
+  }, flowToken);
 };
 
+// Listening
 const startListening = async (flowToken = stateLock.value) => {
   if (state.value === "ENDED" || !isCurrentFlow(flowToken)) return;
-
-  // 1. 如果当前正在录音，仅停止收集当前音频段，严禁销毁硬件级流
   if (recognizer.value && recognizer.value.isRecording) {
-    try {
-      await recognizer.value.stop();
-    } catch (e) {
-      console.warn("[状态机] 清理残留录音流失败", e);
-    }
+    try { await recognizer.value.stop(); } catch (e) { console.warn("[state] cleanup recording failed", e); }
   }
-
-  // 2. 仅在实例彻底丢失（如首次加载或异常崩溃）时，才重新向浏览器申请麦克风
-  if (!recognizer.value) {
-    await initRecognizer();
-  }
-
-  // 防止在异步操作间隙，用户已触发挂断
+  if (!recognizer.value) await initRecognizer();
   if (state.value === "ENDED" || !isCurrentFlow(flowToken)) return;
-
   setState("IDLE", flowToken);
-
-  // 3. 基于已激活的、干净的硬件流，开启新一轮收音
-  if (recognizer.value) {
-    recognizer.value.start(async (result) => await handleVoiceResult(result, flowToken));
-  }
+  if (recognizer.value) recognizer.value.start(async (r) => await handleVoiceResult(r, flowToken));
 };
 
+// Voice result handler
 const handleVoiceResult = async ({ blob, duration, reason }, flowToken = stateLock.value) => {
   if (state.value === "ENDED" || !isCurrentFlow(flowToken)) return;
-  if (state.value === "SPEAKING" && (reason === "noVoice" || reason === "maxDuration")) {
-    return;
-  }
-  if (reason === "noVoice" || reason === "maxDuration") {
-    startListening(flowToken);
-    return;
-  }
-  if (!blob || blob.size === 0 || duration < 500) {
-    startListening(flowToken);
-    return;
-  }
-
-  // 强制闭环：正式进入识别前，强制切断可能的残余播放，确保 AI 彻底闭嘴
-  stopTyping();
-  stopCurrentAudio();
-
-  // 打断任何在途的流式响应，避免“串台”
-  abortStream();
-
+  if (state.value === "SPEAKING" && (reason === "noVoice" || reason === "maxDuration")) return;
+  if (reason === "noVoice" || reason === "maxDuration") { startListening(flowToken); return; }
+  if (!blob || blob.size === 0 || duration < 500) { startListening(flowToken); return; }
+  stopTyping(); stopCurrentAudio(); abortStream();
   setState("WAITING", flowToken);
   try {
     const text = await recognizeSpeech(blob);
-    if (!text || !text.trim()) {
-      startListening(flowToken);
-      return;
-    }
+    if (!text || !text.trim()) { startListening(flowToken); return; }
     addMessage("customer", text);
     await sendToServer(flowToken);
   } catch (error) {
-    console.error("识别失败:", error);
-    const fallbackText = "I'm sorry, I didn't hear you clearly. Could you please repeat it?";
-    addMessage("salesman", fallbackText);
-    await playTTS(
-      fallbackText,
-      null,
-      async () => {
-        if (state.value !== "ENDED" && !recognizer.value?.isRecording && isAudioTrulyFinished.value) {
-          await startListening(flowToken);
-        }
-      },
-      flowToken,
-    );
+    console.error("ASR failed:", error);
+    const fb = "I'm sorry, I didn't hear you clearly. Could you please repeat it?";
+    addMessage("salesman", fb);
+    await playTTS(fb, null, async () => {
+      if (state.value !== "ENDED" && !recognizer.value?.isRecording && isAudioTrulyFinished.value) await startListening(flowToken);
+    }, flowToken);
   }
 };
 
+// Send to LLM
 const sendToServer = async (flowToken = stateLock.value) => {
   if (state.value === "ENDED" || !isCurrentFlow(flowToken)) return;
   setState("WAITING", flowToken);
-
   const category = route.query.category || "";
   const subCategory = route.query.sub_category || "";
   const mode = route.query.mode || "";
   const requestBody = {
-    category,
-    sub_Category: subCategory,
-    sceneType: sceneType.value,
-    mode,
+    category, sub_Category: subCategory, sceneType: sceneType.value, mode,
     conversation: messages.value
       .filter((m) => typeof m.content === "string" && m.content.trim().length > 0)
       .map((m) => ({ role: m.role, content: m.content })),
   };
-
-  // 在屏幕上建立一个空的 AI 聊天气泡
-  const currentAiMessageId = addMessage("salesman", "");
-
-  await fetchChatStream(
-    requestBody,
-    () => {},
-    async (finalFullText) => {
+  const id = addMessage("salesman", "");
+  await fetchChatStream(requestBody, () => {}, async (finalFullText) => {
+    if (!isCurrentFlow(flowToken)) return;
+    await playTTS(finalFullText, (audioEl) => {
       if (!isCurrentFlow(flowToken)) return;
-      await playTTS(
-        finalFullText,
-        (audioEl) => {
-          if (!isCurrentFlow(flowToken)) return;
-          setState("SPEAKING", flowToken);
-          startTyping(finalFullText, audioEl, (currentText) => {
-            updateMessageContent(currentAiMessageId, currentText);
-          });
-        },
-        async () => {
-          if (state.value !== "ENDED" && isAudioTrulyFinished.value) {
-            await startListening(flowToken);
-          }
-        },
-        flowToken,
-      );
-    },
-    async (error) => {
-      console.error("服务端请求失败:", error);
-      const errorText = "Sorry, the service is temporarily unavailable. Please try again in a moment.";
-      updateMessageContent(currentAiMessageId, errorText);
-      notify.error("Service is temporarily unavailable");
-      await playTTS(
-        errorText,
-        null,
-        async () => {
-          if (state.value !== "ENDED" && isAudioTrulyFinished.value) {
-            await startListening(flowToken);
-          }
-        },
-        flowToken,
-      );
-    },
-  );
+      setState("SPEAKING", flowToken);
+      startTyping(finalFullText, audioEl, (t) => updateMessageContent(id, t));
+    }, async () => {
+      if (state.value !== "ENDED" && isAudioTrulyFinished.value) await startListening(flowToken);
+    }, flowToken);
+  }, async (error) => {
+    console.error("Server error:", error);
+    const et = "Sorry, the service is temporarily unavailable. Please try again in a moment.";
+    updateMessageContent(id, et);
+    notify.error("Service is temporarily unavailable");
+    await playTTS(et, null, async () => {
+      if (state.value !== "ENDED" && isAudioTrulyFinished.value) await startListening(flowToken);
+    }, flowToken);
+  });
 };
 
+// Start / End
 const startCall = async () => {
   try {
-    if (!VoiceRecognizerWithVAD.isSupported()) {
-      notify.error("Current browser does not support speech recognition");
-      return;
-    }
+    if (!VoiceRecognizerWithVAD.isSupported()) { notify.error("Browser unsupported"); return; }
     const flowToken = createFlowToken();
     await initRecognizer();
-    startCallTimer();
-    LLMServer.reset();
-    messages.value = [];
+    startCallTimer(); LLMServer.reset(); messages.value = [];
     await playGreeting(flowToken);
-  } catch (error) {
-    console.error("启动通话失败:", error);
-    notify.error(`Start failed: ${error.message}`);
-  }
+  } catch (error) { console.error("Start failed:", error); notify.error(`Start failed: ${error.message}`); }
 };
 
 const endCall = async () => {
   if (state.value === "ENDED") return;
-  stateLock.value = "";
-  state.value = "ENDED";
-  stopCallTimer();
-  stopTyping();
-  stopCurrentAudio();
-  abortStream();
+  stateLock.value = ""; state.value = "ENDED";
+  stopCallTimer(); stopTyping(); stopCurrentAudio(); abortStream();
   await closeRecognizer();
-  // 生成通话报告
   generateConversationReport(messages.value, sceneType.value);
 };
 
-const restart = () => {
-  // 返回首页
-  router.push("/home");
-};
+const restart = () => router.push("/home");
 
 // Lifecycle
 onMounted(() => {
@@ -541,14 +510,9 @@ onMounted(() => {
 
 onUnmounted(async () => {
   waveformActive = false;
-  if (waveformFrameId) {
-    cancelAnimationFrame(waveformFrameId);
-    waveformFrameId = 0;
-  }
-  stopCallTimer();
-  abortStream();
+  if (waveformFrameId) { cancelAnimationFrame(waveformFrameId); waveformFrameId = 0; }
+  stopCallTimer(); abortStream();
   await closeRecognizer();
-  stopTyping();
-  stopCurrentAudio();
+  stopTyping(); stopCurrentAudio();
 });
 </script>
