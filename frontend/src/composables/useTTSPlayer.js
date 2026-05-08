@@ -188,8 +188,7 @@ export function useTTSPlayer() {
               isFirst = false;
               stopVolumeLoop(ttsVolume);
               sampleTtsVolume(ttsVolume);
-              // Pass null — typing effect will use timer mode for consistent speed
-              onFirstStart?.(null);
+              onFirstStart?.(globalAudioInst);
             }
           };
           globalAudioInst.play().catch(() => resolve());
