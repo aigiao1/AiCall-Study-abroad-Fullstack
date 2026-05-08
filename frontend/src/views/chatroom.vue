@@ -92,20 +92,13 @@
         <div class="relative flex h-[132px] items-center justify-center overflow-hidden rounded-[26px] bg-white/58">
           <div class="absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,_rgba(56,189,248,0.18)_0%,_rgba(125,211,252,0.1)_36%,_transparent_72%)] blur-2xl"></div>
 
-          <div
+          <WaveformVisualizer
             v-if="state === 'LISTENING'"
-            class="relative flex items-center justify-center"
-          >
-            <div
-              class="absolute rounded-full bg-sky-300/20 shadow-[0_0_56px_rgba(56,189,248,0.24)] transition-all duration-150"
-              :style="microphoneHaloStyle"
-            ></div>
-            <div
-              class="absolute rounded-full bg-sky-300/14 transition-all duration-150"
-              :style="microphoneOuterHaloStyle"
-            ></div>
-            <div class="relative h-5 w-5 rounded-full bg-sky-400 shadow-[0_0_28px_rgba(56,189,248,0.5)]"></div>
-          </div>
+            :volume="microphoneVolume"
+            :bar-count="48"
+            color="#10b981"
+            class="w-full h-16"
+          />
 
           <div
             v-else-if="state === 'SPEAKING'"
@@ -183,6 +176,7 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ArrowLeft, PhoneOff } from "lucide-vue-next";
 import SummaryModal from "@/components/SummaryModal.vue";
+import WaveformVisualizer from "@/components/WaveformVisualizer.vue";
 import { useCallReport } from "../composables/useCallReport.js";
 import { useCallTimer } from "../composables/useCallTimer.js";
 import { useChatMessages } from "../composables/useChatMessages.js";
@@ -299,26 +293,6 @@ const stateLabel = computed(() => {
 });
 
 const sceneType = computed(() => Number(route.query.scene) || 1);
-
-const microphoneHaloStyle = computed(() => {
-  const scale = 0.92 + microphoneVolume.value * 0.98;
-  const size = 82;
-  return {
-    width: `${size}px`,
-    height: `${size}px`,
-    transform: `scale(${scale})`,
-  };
-});
-
-const microphoneOuterHaloStyle = computed(() => {
-  const scale = 1.08 + microphoneVolume.value * 1.12;
-  const size = 122;
-  return {
-    width: `${size}px`,
-    height: `${size}px`,
-    transform: `scale(${scale})`,
-  };
-});
 
 const waveformStyles = computed(() =>
   waveformProfile.map(({ gaussian, jitter }) => {
