@@ -1,7 +1,7 @@
 // src/composables/useMicrophone.js
 import { ref } from "vue";
 import { VoiceRecognizerWithVAD } from "../utils/voiceRecognizer.js";
-import { apiSpeechToText } from "../api/index.js";
+import { uploadVoice1 } from "../api/index.js";
 import { CONFIG } from "../utils/config.js";
 
 let meterAudioContext = null;
@@ -88,12 +88,13 @@ export function useMicrophone(onVoiceStart) {
   const microphoneVolume = ref(0);
   let isRecognizerInitializing = false;
 
-  // 找后端把声音文件翻译成文字
+  // Direct ASR via Cloudflare Worker proxy (skips backend hop for lower latency)
   const recognizeSpeech = async (audioBlob) => {
     const formData = new FormData();
     formData.append("file", audioBlob, "recording.wav");
-    const result = await apiSpeechToText(formData);
-    return result.data || "";
+    const res = await uploadVoice1(formData);
+    const payload = res.data;
+    return typeof payload === "string" ? payload : payload?.data || payload?.text || "";
   };
 
   // 向浏览器申请麦克风权限，并同步建立真实音量分析链路
