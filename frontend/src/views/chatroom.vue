@@ -372,11 +372,15 @@ const handleVoiceResult = async ({ blob, duration, reason }, flowToken = stateLo
     await sendToServer(flowToken);
   } catch (error) {
     console.error("ASR failed:", error);
-    const fb = "I'm sorry, I didn't hear you clearly. Could you please repeat it?";
-    addMessage("salesman", fb);
-    await playTTS(fb, null, async () => {
-      if (state.value !== "ENDED" && !recognizer.value?.isRecording && isAudioTrulyFinished.value) await startListening(flowToken);
-    }, flowToken);
+    try {
+      const fb = "I'm sorry, I didn't hear you clearly. Could you please repeat it?";
+      addMessage("salesman", fb);
+      await playTTS(fb, null, async () => {
+        if (state.value !== "ENDED" && !recognizer.value?.isRecording && isAudioTrulyFinished.value) await startListening(flowToken);
+      }, flowToken);
+    } catch {
+      startListening(flowToken);
+    }
   }
 };
 

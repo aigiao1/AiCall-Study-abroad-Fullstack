@@ -67,12 +67,19 @@ const splitSentences = (text) => {
   return parts.filter((s) => s.trim().length > 0);
 };
 
-// Fetch TTS audio for a single sentence
+// Fetch TTS audio for a single sentence (with retry for flaky proxy)
 const fetchTTSAudio = async (text) => {
   let t = text.trim();
   if (t.length > 200) t = t.substring(0, 200);
-  const arrayBuffer = await apiTextToSpeech(t);
-  return new Blob([arrayBuffer], { type: 'audio/mpeg' });
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const arrayBuffer = await apiTextToSpeech(t);
+      return new Blob([arrayBuffer], { type: 'audio/mpeg' });
+    } catch (e) {
+      if (attempt === 2) throw e;
+      await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+    }
+  }
 };
 
 export function useTTSPlayer() {
