@@ -96,7 +96,9 @@ export function useTTSPlayer() {
     audio.onstalled = null;
   };
 
-  // Sequential sentence-by-sentence TTS with prefetch (the main optimization)
+  const SPLIT_THRESHOLD = 300; // Only split into sentences if text is long enough
+
+  // Sequential sentence-by-sentence TTS with prefetch (for long LLM responses)
   const playTTSSequential = async (
     text,
     recognizerRef,
@@ -124,8 +126,10 @@ export function useTTSPlayer() {
       audio.onstalled = null;
     }
 
-    const sentences = splitSentences(text);
-    if (sentences.length === 0) return;
+    // Short text: single TTS call (faster — no per-sentence overhead)
+    // Long text: split into sentences, prefetch next while playing
+    const segments = text.length > SPLIT_THRESHOLD ? splitSentences(text) : [text];
+    if (segments.length === 0) return;
 
     try {
       const globalAudioInst = globalAudioManager.getAudio();
@@ -150,22 +154,21 @@ export function useTTSPlayer() {
       let prefetchBlob = null;
       let prefetchIdx = -1;
 
-      for (let i = 0; i < sentences.length; i++) {
+      for (let i = 0; i < segments.length; i++) {
         if (seqAborted || stateRef.value === "ENDED") break;
 
-        // Use prefetched blob or fetch now
         let audioBlob;
         if (prefetchIdx === i) {
           audioBlob = prefetchBlob;
           prefetchBlob = null;
         } else {
-          audioBlob = await fetchTTSAudio(sentences[i]);
+          audioBlob = await fetchTTSAudio(segments[i]);
         }
 
-        // Prefetch next sentence while current plays
-        if (i + 1 < sentences.length && !seqAborted) {
+        // Prefetch next segment while current plays
+        if (i + 1 < segments.length && !seqAborted) {
           const nextIdx = i + 1;
-          fetchTTSAudio(sentences[nextIdx]).then((blob) => {
+          fetchTTSAudio(segments[nextIdx]).then((blob) => {
             prefetchBlob = blob;
             prefetchIdx = nextIdx;
           });
@@ -178,27 +181,21 @@ export function useTTSPlayer() {
         globalAudioInst.load();
 
         await new Promise((resolve) => {
-          globalAudioInst.onended = () => {
-            URL.revokeObjectURL(audioUrl);
-            resolve();
-          };
-          globalAudioInst.onerror = () => {
-            URL.revokeObjectURL(audioUrl);
-            resolve();
-          };
+          globalAudioInst.onended = () => { URL.revokeObjectURL(audioUrl); resolve(); };
+          globalAudioInst.onerror = () => { URL.revokeObjectURL(audioUrl); resolve(); };
           globalAudioInst.onplay = () => {
             if (isFirst) {
               isFirst = false;
               stopVolumeLoop(ttsVolume);
               sampleTtsVolume(ttsVolume);
-              onFirstStart?.(globalAudioInst);
+              // Pass null — typing effect will use timer mode for consistent speed
+              onFirstStart?.(null);
             }
           };
           globalAudioInst.play().catch(() => resolve());
         });
       }
 
-      // Cleanup
       if (recognizerRef.value && stateRef.value !== "ENDED") {
         recognizerRef.value.setBargeInMode(false, null);
       }
@@ -217,17 +214,10 @@ export function useTTSPlayer() {
     }
   };
 
-  // Original single-segment TTS (kept for greetings and short responses)
   const playTTSAudio = async (
-    text,
-    recognizerRef,
-    stateRef,
-    abortStreamFn,
-    handleVoiceResultFn,
-    onStart,
-    onEnd,
+    text, recognizerRef, stateRef, abortStreamFn,
+    handleVoiceResultFn, onStart, onEnd,
   ) => {
-    // Use sequential playback for everything — automatically handles short texts too
     return playTTSSequential(
       text, recognizerRef, stateRef, abortStreamFn,
       handleVoiceResultFn, onStart, onEnd,
