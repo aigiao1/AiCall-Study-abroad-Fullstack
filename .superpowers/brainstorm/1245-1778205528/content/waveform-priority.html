@@ -1,0 +1,70 @@
+<h2>语音波形图 + 优先级拆解</h2>
+<p class="subtitle">波形图怎么做 + 哪些功能现在做、哪些后续迭代</p>
+
+<div class="section">
+  <h3>语音波形图设计</h3>
+  <div style="background:#f8fafc;border-radius:16px;padding:20px">
+    <p style="font-size:13px;margin:0 0 12px">利用现有的 <code>useMicrophone.microphoneVolume</code>（已有 RMS 值），新增一个 Canvas 组件画成波形条。</p>
+    <div style="display:flex;gap:12px;align-items:center;justify-content:center;background:#0f172a;border-radius:14px;padding:24px;margin-bottom:12px">
+      <div style="width:4px;height:20px;background:#10b981;border-radius:2px;animation:pulse 0.3s infinite alternate"></div>
+      <div style="width:4px;height:35px;background:#10b981;border-radius:2px"></div>
+      <div style="width:4px;height:50px;background:#34d399;border-radius:2px"></div>
+      <div style="width:4px;height:28px;background:#10b981;border-radius:2px"></div>
+      <div style="width:4px;height:55px;background:#34d399;border-radius:2px"></div>
+      <div style="width:4px;height:42px;background:#10b981;border-radius:2px"></div>
+      <div style="width:4px;height:18px;background:#6ee7b7;border-radius:2px"></div>
+      <div style="width:4px;height:48px;background:#34d399;border-radius:2px"></div>
+      <div style="width:4px;height:32px;background:#10b981;border-radius:2px"></div>
+      <div style="width:4px;height:22px;background:#6ee7b7;border-radius:2px"></div>
+      <div style="width:4px;height:38px;background:#10b981;border-radius:2px"></div>
+      <div style="width:4px;height:52px;background:#34d399;border-radius:2px"></div>
+    </div>
+    <p style="font-size:12px;color:#64748b;margin:0">Canvas 画 40-60 根竖条，每根高度 = microphoneVolume * randomGaussian(columnIndex)，产生自然的频谱波动感</p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>功能优先级：第一批（现在做）vs 第二批（后续迭代）</h3>
+  <div class="split">
+    <div style="background:#f0f9ff;border:2px solid #0ea5e9;border-radius:16px;padding:16px">
+      <h4 style="color:#0369a1;margin:0 0 10px">🥇 第一批（本次实现）</h4>
+      <ul style="font-size:12px;line-height:2;margin:0;padding-left:18px">
+        <li>首页 3 场景卡片</li>
+        <li>留学顾问页（现有逻辑迁移）</li>
+        <li>模拟面试页（被面试 + 面试官模式）</li>
+        <li>英语教练页（情景对话 + 语法纠错）</li>
+        <li>后端 SceneType 字段 + 3 套 Prompt</li>
+        <li>语音波形图 Canvas 组件</li>
+        <li>波形图集成到 chatroom</li>
+      </ul>
+    </div>
+    <div style="background:#fefce8;border:2px solid #f59e0b;border-radius:16px;padding:16px">
+      <h4 style="color:#92400e;margin:0 0 10px">🥈 第二批（后续迭代）</h4>
+      <ul style="font-size:12px;line-height:2;margin:0;padding-left:18px">
+        <li>面试雷达图报告</li>
+        <li>闯关模式（Easy → Hard）</li>
+        <li>词汇量挑战游戏</li>
+        <li>口语能力进步追踪</li>
+        <li>简历上传 + AI 解析</li>
+        <li>面试压力测试模式</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>第一批就够，开始做</h3>
+      <p>首页 + 3 个详情页 + 波形图。后续迭代再说。工作量：2-3 天。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>想调整功能清单</h3>
+      <p>某个功能想换掉或调整优先级，告诉我。</p>
+    </div>
+  </div>
+</div>

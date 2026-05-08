@@ -1,0 +1,91 @@
+<h2>场景切换后，原来的4个留学分类怎么处理？</h2>
+<p class="subtitle">现在首页是"4个Topic卡片 + 子话题"，加了场景切换后，结构会变</p>
+
+<div class="section">
+  <h3>当前结构</h3>
+  <div style="background:#f8fafc;border-radius:16px;padding:20px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="mock-nav" style="flex:1;min-w:80px;text-align:center">🏫 选校</div>
+      <div class="mock-nav" style="flex:1;min-w:80px;text-align:center">📚 学术</div>
+      <div class="mock-nav" style="flex:1;min-w:80px;text-align:center">💰 预算</div>
+      <div class="mock-nav" style="flex:1;min-w:80px;text-align:center">✈️ 出国前</div>
+    </div>
+    <div class="placeholder" style="margin-top:12px">→ 选Topic → 子话题 → 开始通话</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>方案 A：三层结构（保持现有4分类）</h3>
+  <p style="color:#64748b;font-size:13px">先选场景，再进到该场景下的分类列表</p>
+  <div style="background:#f0f9ff;border:2px solid #0ea5e9;border-radius:16px;padding:20px">
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      <div style="background:#0ea5e9;color:#fff;padding:10px 16px;border-radius:12px;font-weight:600;font-size:13px">🎓 留学顾问</div>
+      <div style="background:#fff;color:#64748b;padding:10px 16px;border-radius:12px;font-weight:600;font-size:13px;border:1px solid #e2e8f0">🤖 模拟面试</div>
+      <div style="background:#fff;color:#64748b;padding:10px 16px;border-radius:12px;font-weight:600;font-size:13px;border:1px solid #e2e8f0">🌍 英语教练</div>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:14px">
+      <p style="font-size:12px;color:#94a3b8;margin:0 0 8px 0">留学分类（保持现有4个）</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="mock-nav" style="font-size:11px">选校</span>
+        <span class="mock-nav" style="font-size:11px">学术</span>
+        <span class="mock-nav" style="font-size:11px">预算</span>
+        <span class="mock-nav" style="font-size:11px">出国前</span>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#94a3b8;margin-top:10px">其他两个场景用不同的分类（面试题 / 口语话题等）</p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>方案 B：扁平结构（场景即入口）</h3>
+  <p style="color:#64748b;font-size:13px">每个场景是独立卡片，点击直接看到该场景的专属话题，不再嵌套三层</p>
+  <div style="background:#f0fdf4;border:2px solid#10b981;border-radius:16px;padding:20px">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="background:#fff;border-radius:14px;padding:16px;border:1px solid #e2e8f0">
+        <span style="font-weight:700;font-size:14px">🎓 留学顾问</span>
+        <span style="font-size:11px;color:#94a3b8;margin-left:12px">随时可用</span>
+        <div style="margin-top:8px;display:flex;gap:6px">
+          <span style="background:#f1f5f9;padding:4px 10px;border-radius:8px;font-size:11px">选校</span>
+          <span style="background:#f1f5f9;padding:4px 10px;border-radius:8px;font-size:11px">学术</span>
+          <span style="background:#f1f5f9;padding:4px 10px;border-radius:8px;font-size:11px">预算</span>
+          <span style="background:#f1f5f9;padding:4px 10px;border-radius:8px;font-size:11px">出国前</span>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;border:1px solid #e2e8f0">
+        <span style="font-weight:700;font-size:14px">🤖 模拟面试官</span>
+        <span style="font-size:11px;color:#f59e0b;margin-left:12px">需上传简历</span>
+        <div style="margin-top:8px;display:flex;gap:6px">
+          <span style="background:#f1f5f9;padding:4px 10px;border-radius:8px;font-size:11px">行为面试</span>
+          <span style="background:#f1f5f9;padding:4px 10px;border-radius:8px;font-size:11px">技术面试</span>
+          <span style="background:#f1f5f9;padding:4px 10px;border-radius:8px;font-size:11px">自由提问</span>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;border:1px solid #e2e8f0">
+        <span style="font-weight:700;font-size:14px">🌍 英语口语教练</span>
+        <span style="font-size:11px;color:#94a3b8;margin-left:12px">随时可用</span>
+        <div style="margin-top:8px;display:flex;gap:6px">
+          <span style="background:#f1f5f9;padding:4px 10px;border-radius:8px;font-size:11px">日常对话</span>
+          <span style="background:#f1f5f9;padding:4px 10px;border-radius:8px;font-size:11px">面试英语</span>
+          <span style="background:#f1f5f9;padding:4px 10px;border-radius:8px;font-size:11px">学术英语</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>三层结构：场景 → 分类 → 子话题</h3>
+      <p>保留现有4个留学分类完整不变，其他场景也各自有分类层级。结构统一但层级多。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>扁平结构：场景卡片直接展开</h3>
+      <p>每个场景是独立卡片，点击展开显示该场景的专属话题，结构简单清晰。</p>
+    </div>
+  </div>
+</div>
