@@ -12,6 +12,7 @@ namespace AICall.API.Mappers
                 AppUserId = userId,
                 Category = requestDto.Category,
                 SubCategory = requestDto.Sub_Category,
+                SceneType = requestDto.SceneType,
                 Summary = generatedSummary,
                 StartTime = DateTime.Now,
                 EndTime = DateTime.Now,
