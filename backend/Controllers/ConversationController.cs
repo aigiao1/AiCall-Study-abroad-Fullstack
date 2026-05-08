@@ -101,9 +101,15 @@ namespace AICall.API.Controllers
             try
             {
                 string rawSummary = await _llmService.GenerateSummaryAsync(request.Conversation, request.Category, request.SceneType);
-                string cleanJson = rawSummary.Replace("```json", "").Replace("```", "").Trim();
 
-                // Parse as dynamic dictionary to support all scene-specific fields
+                // Extract JSON from LLM response (may contain markdown fences or preamble text)
+                string cleanJson = rawSummary
+                    .Replace("```json", "").Replace("```", "").Trim();
+                int jsonStart = cleanJson.IndexOf('{');
+                int jsonEnd = cleanJson.LastIndexOf('}');
+                if (jsonStart >= 0 && jsonEnd > jsonStart)
+                    cleanJson = cleanJson.Substring(jsonStart, jsonEnd - jsonStart + 1);
+
                 var summaryDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(cleanJson);
                 if (summaryDict == null) throw new Exception("LLM returned unparseable JSON");
 
