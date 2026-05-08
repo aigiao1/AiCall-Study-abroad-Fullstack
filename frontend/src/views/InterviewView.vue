@@ -40,7 +40,7 @@ const startCall = async () => {
         scene: "2",
         mode: mode.value,
         category: domain.value,
-        sub_category: mode.value,
+        sub_category: domain.value,
         speechText: mode.value === "interviewee"
           ? "Hello! I'm your interviewer today. Let's begin. Tell me about yourself."
           : "Hello! I'm the candidate today. Please go ahead with your first question.",
